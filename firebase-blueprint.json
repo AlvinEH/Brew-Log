@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "BrewLog": {
+      "title": "BrewLog",
+      "description": "A record of a single pourover coffee brew.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user who created the log." },
+        "date": { "type": "string", "format": "date-time", "description": "The date and time of the brew." },
+        "beanName": { "type": "string", "description": "Name of the coffee beans used." },
+        "roaster": { "type": "string", "description": "Name of the coffee roaster." },
+        "grinder": { "type": "string", "description": "The grinder used." },
+        "grindSize": { "type": "string", "description": "The grind size setting." },
+        "recipeId": { "type": "string", "description": "The ID of the recipe used for this brew." },
+        "coffeeWeight": { "type": "number", "description": "Weight of coffee beans in grams." },
+        "waterWeight": { "type": "number", "description": "Weight of water in grams." },
+        "ratio": { "type": "string", "description": "Coffee to water ratio (e.g., 1:15)." },
+        "waterTemp": { "type": "string", "description": "Water temperature used for the brew." },
+        "timings": { 
+          "type": "array", 
+          "items": { 
+            "type": "object",
+            "properties": {
+              "step": { "type": "string" },
+              "time": { "type": "string" }
+            }
+          },
+          "description": "Sequence of brew steps and their timings."
+        },
+        "notes": { "type": "string", "description": "Additional notes about the brew." },
+        "rating": { "type": "number", "description": "User rating from 1 to 5." }
+      },
+      "required": ["userId", "date", "beanName", "coffeeWeight", "waterWeight"]
+    },
+    "CoffeeBean": {
+      "title": "CoffeeBean",
+      "description": "A coffee bean variety saved by the user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "roaster": { "type": "string" },
+        "roastDate": { "type": "string", "format": "date" },
+        "isArchived": { "type": "boolean" },
+        "price": { "type": "string" },
+        "weight": { "type": "string" },
+        "flavorProfile": { "type": "array", "items": { "type": "string" } },
+        "url": { "type": "string" },
+        "notes": { "type": "string" },
+        "rating": { "type": "number", "description": "User rating from 1 to 5." }
+      },
+      "required": ["userId", "name", "roaster"]
+    },
+    "Recipe": {
+      "title": "Recipe",
+      "description": "A pinned coffee recipe.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "source": { "type": "string" },
+        "description": { "type": "string" },
+        "coffeeWeight": { "type": "number" },
+        "waterWeight": { "type": "number" },
+        "ratio": { "type": "string" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "timings": { 
+          "type": "array", 
+          "items": { 
+            "type": "object",
+            "properties": {
+              "step": { "type": "string" },
+              "time": { "type": "string" },
+              "waterWeight": { "type": "string" }
+            }
+          }
+        },
+        "url": { "type": "string" }
+      },
+      "required": ["userId", "title", "source", "coffeeWeight", "waterWeight", "ratio", "steps"]
+    },
+    "Grinder": {
+      "title": "Grinder",
+      "description": "A coffee grinder saved by the user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "type": { "type": "string", "enum": ["Manual", "Electric"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["userId", "name"]
+    },
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "User preferences and settings.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "tempUnit": { "type": "string", "enum": ["C", "F"] },
+        "defaultGrinderId": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+        "colorScheme": { "type": "string", "enum": ["default", "catppuccin", "rose-pine", "gruvbox", "everforest"] }
+      },
+      "required": ["userId", "tempUnit", "theme", "colorScheme"]
+    }
+  },
+  "firestore": {
+    "/brews": {
+      "schema": "BrewLog",
+      "description": "Collection of all coffee brew logs."
+    },
+    "/beans": {
+      "schema": "CoffeeBean",
+      "description": "Collection of saved coffee beans."
+    },
+    "/recipes": {
+      "schema": "Recipe",
+      "description": "Collection of pinned recipes."
+    },
+    "/grinders": {
+      "schema": "Grinder",
+      "description": "Collection of saved coffee grinders."
+    },
+    "/settings": {
+      "schema": "UserSettings",
+      "description": "Collection of user settings."
+    }
+  }
+}

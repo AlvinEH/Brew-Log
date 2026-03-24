@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Material 3 inspired Coffee Palette */
+  --color-primary: var(--color-primary);
+  --color-on-primary: var(--color-on-primary);
+  --color-primary-container: var(--color-primary-container);
+  --color-on-primary-container: var(--color-on-primary-container);
+  
+  --color-secondary: var(--color-secondary);
+  --color-on-secondary: var(--color-on-secondary);
+  --color-secondary-container: var(--color-secondary-container);
+  --color-on-secondary-container: var(--color-on-secondary-container);
+  
+  --color-surface: var(--color-surface);
+  --color-on-surface: var(--color-on-surface);
+  --color-surface-variant: var(--color-surface-variant);
+  --color-on-surface-variant: var(--color-on-surface-variant);
+  
+  --color-outline: var(--color-outline);
+  
+  --color-error-container: var(--color-error-container);
+  --color-on-error-container: var(--color-on-error-container);
+}
+
+:root {
+  /* Default (Coffee) Light */
+  --color-primary: #6F4E37; /* Coffee Brown */
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #EAD699; /* Deeper Cream/Vanilla */
+  --color-on-primary-container: #3E2723;
+  
+  --color-secondary: #4E342E;
+  --color-on-secondary: #FFFFFF;
+  --color-secondary-container: #D7CCC8;
+  --color-on-secondary-container: #212121;
+  
+  --color-surface: #FFFBFE;
+  --color-on-surface: #1C1B1F;
+  --color-surface-variant: #E7E0EC;
+  --color-on-surface-variant: #49454F;
+  
+  --color-outline: #79747E;
+  
+  --color-error-container: #F9DEDC;
+  --color-on-error-container: #410E0B;
+}
+
+.dark {
+  /* Default (Coffee) Dark */
+  --color-primary: #D7CCC8;
+  --color-on-primary: #3E2723;
+  --color-primary-container: #5D4037;
+  --color-on-primary-container: #F3E5AB;
+  --color-secondary: #A1887F;
+  --color-on-secondary: #212121;
+  --color-secondary-container: #4E342E;
+  --color-on-secondary-container: #D7CCC8;
+  --color-surface: #1C1B1F;
+  --color-on-surface: #E6E1E5;
+  --color-surface-variant: #49454F;
+  --color-on-surface-variant: #CAC4D0;
+  --color-outline: #938F99;
+}
+
+/* Catppuccin Mocha (Dark) */
+.scheme-catppuccin.dark {
+  --color-primary: #cba6f7; /* Mauve */
+  --color-on-primary: #11111b;
+  --color-primary-container: #45475a;
+  --color-on-primary-container: #cba6f7;
+  --color-secondary: #89b4fa; /* Blue */
+  --color-on-secondary: #11111b;
+  --color-secondary-container: #585b70;
+  --color-on-secondary-container: #89b4fa;
+  --color-surface: #1e1e2e;
+  --color-on-surface: #cdd6f4;
+  --color-surface-variant: #313244;
+  --color-on-surface-variant: #bac2de;
+  --color-outline: #585b70;
+}
+
+/* Catppuccin Latte (Light) */
+.scheme-catppuccin {
+  --color-primary: #8839ef; /* Mauve */
+  --color-on-primary: #eff1f5;
+  --color-primary-container: #dce0e8;
+  --color-on-primary-container: #8839ef;
+  --color-secondary: #1e66f5; /* Blue */
+  --color-on-secondary: #eff1f5;
+  --color-secondary-container: #e6e9ef;
+  --color-on-secondary-container: #1e66f5;
+  --color-surface: #eff1f5;
+  --color-on-surface: #4c4f69;
+  --color-surface-variant: #e6e9ef;
+  --color-on-surface-variant: #6c6f85;
+  --color-outline: #9ca0b0;
+}
+
+/* Rose Pine */
+.scheme-rose-pine.dark {
+  --color-primary: #ebbcba; /* Rose */
+  --color-on-primary: #191724;
+  --color-primary-container: #403d52;
+  --color-on-primary-container: #ebbcba;
+  --color-secondary: #f6c177; /* Gold */
+  --color-on-secondary: #191724;
+  --color-secondary-container: #524f67;
+  --color-on-secondary-container: #f6c177;
+  --color-surface: #191724;
+  --color-on-surface: #e0def4;
+  --color-surface-variant: #26233a;
+  --color-on-surface-variant: #908caa;
+  --color-outline: #6e6a86;
+}
+
+.scheme-rose-pine {
+  --color-primary: #d7827e; /* Rose */
+  --color-on-primary: #faf4ed;
+  --color-primary-container: #e8e1d9;
+  --color-on-primary-container: #d7827e;
+  --color-secondary: #ea9d34; /* Gold */
+  --color-on-secondary: #faf4ed;
+  --color-secondary-container: #f2e9e1;
+  --color-on-secondary-container: #ea9d34;
+  --color-surface: #faf4ed;
+  --color-on-surface: #575279;
+  --color-surface-variant: #f2e9e1;
+  --color-on-surface-variant: #797593;
+  --color-outline: #9893a5;
+}
+
+/* Gruvbox */
+.scheme-gruvbox.dark {
+  --color-primary: #fabd2f; /* Yellow */
+  --color-on-primary: #282828;
+  --color-primary-container: #504945;
+  --color-on-primary-container: #fabd2f;
+  --color-secondary: #8ec07c; /* Aqua */
+  --color-on-secondary: #282828;
+  --color-secondary-container: #665c54;
+  --color-on-secondary-container: #8ec07c;
+  --color-surface: #282828;
+  --color-on-surface: #ebdbb2;
+  --color-surface-variant: #3c3836;
+  --color-on-surface-variant: #a89984;
+  --color-outline: #665c54;
+}
+
+.scheme-gruvbox {
+  --color-primary: #b57614; /* Yellow */
+  --color-on-primary: #fbf1c7;
+  --color-primary-container: #d5c4a1;
+  --color-on-primary-container: #b57614;
+  --color-secondary: #427b58; /* Aqua */
+  --color-on-secondary: #fbf1c7;
+  --color-secondary-container: #ebdbb2;
+  --color-on-secondary-container: #427b58;
+  --color-surface: #fbf1c7;
+  --color-on-surface: #3c3836;
+  --color-surface-variant: #ebdbb2;
+  --color-on-surface-variant: #7c6f64;
+  --color-outline: #a89984;
+}
+
+/* Everforest */
+.scheme-everforest.dark {
+  --color-primary: #a7c080; /* Green */
+  --color-on-primary: #2d353b;
+  --color-primary-container: #475258;
+  --color-on-primary-container: #a7c080;
+  --color-secondary: #dbbc7f; /* Yellow */
+  --color-on-secondary: #2d353b;
+  --color-secondary-container: #56635f;
+  --color-on-secondary-container: #dbbc7f;
+  --color-surface: #2d353b;
+  --color-on-surface: #d3c6aa;
+  --color-surface-variant: #3d484d;
+  --color-on-surface-variant: #9da9a0;
+  --color-outline: #56635f;
+}
+
+.scheme-everforest {
+  --color-primary: #4f5b58; /* Green */
+  --color-on-primary: #fdf6e3;
+  --color-primary-container: #e5dfc5;
+  --color-on-primary-container: #4f5b58;
+  --color-secondary: #b58900; /* Yellow */
+  --color-on-secondary: #fdf6e3;
+  --color-secondary-container: #f0ebce;
+  --color-on-secondary-container: #b58900;
+  --color-surface: #fdf6e3;
+  --color-on-surface: #5c6a72;
+  --color-surface-variant: #f0ebce;
+  --color-on-surface-variant: #859289;
+  --color-outline: #939f91;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.m3-card {
+  background-color: var(--color-surface-variant);
+  border-radius: 1.5rem; /* 24px */
+  padding: 1rem;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .m3-card {
+    padding: 1.5rem;
+  }
+}
+
+.m3-button-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: 9999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  touch-action: manipulation;
+}
+
+@media (min-width: 640px) {
+  .m3-button-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+.m3-button-tonal {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  border-radius: 9999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  touch-action: manipulation;
+}
+
+.m3-button-outlined {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-outline);
+  border-radius: 9999px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  touch-action: manipulation;
+}
+
+@media (min-width: 640px) {
+  .m3-button-tonal {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  .m3-button-outlined {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+.m3-input {
+  background-color: transparent;
+  border: 1px solid var(--color-outline);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.875rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  outline: none;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .m3-input {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+.m3-input:focus {
+  border-color: var(--color-primary);
+  border-width: 2px;
+}
+

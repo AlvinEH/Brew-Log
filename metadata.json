@@ -1,0 +1,5 @@
+{
+  "name": "BrewLog: Pourover Tracker",
+  "description": "A Material 3 inspired app for tracking daily pourover coffee brews, scaling ratios, and discovering new recipes.",
+  "requestFramePermissions": []
+}
