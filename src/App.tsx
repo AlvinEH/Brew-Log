@@ -40,7 +40,8 @@ import {
   deleteDoc, 
   updateDoc,
   doc,
-  setDoc
+  setDoc,
+  Timestamp
 } from 'firebase/firestore';
 import { User } from 'firebase/auth';
 
@@ -130,9 +131,17 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
+      console.log("Auth state changed:", u ? `User: ${u.uid} (${u.email})` : "No user");
       setUser(u);
       if (!u) {
         setLoading(false);
+        console.log("User not authenticated, stopping loading");
+      } else {
+        console.log("User authenticated:", {
+          uid: u.uid,
+          email: u.email,
+          emailVerified: u.emailVerified
+        });
       }
     });
     return () => unsubscribe();
@@ -280,16 +289,69 @@ export default function App() {
   const handleLogout = () => signOut(auth);
 
   const saveLog = async (log: BrewLog) => {
+    console.log("saveLog called with:", log);
+    console.log("Current user:", user);
+    
+    if (!user?.uid) {
+      console.error("User not authenticated");
+      setError("You must be signed in to save brew logs");
+      return;
+    }
+    
     try {
+      // Convert Timestamp to ISO string for Firestore rules
+      const dateString = log.date instanceof Timestamp 
+        ? log.date.toDate().toISOString()
+        : new Date().toISOString();
+      
+      // Clean and validate data to match Firestore rules
+      const cleanedLog: any = {
+        userId: user.uid,
+        date: dateString,
+        beanName: log.beanName?.trim() || '',
+        coffeeWeight: log.coffeeWeight || 0,
+        waterWeight: log.waterWeight || 0
+      };
+      
+      // Validate required fields
+      if (!cleanedLog.beanName || cleanedLog.beanName.length === 0) {
+        setError("Bean name is required");
+        throw new Error("Bean name is required");
+      }
+      
+      if (cleanedLog.coffeeWeight <= 0 || cleanedLog.waterWeight <= 0) {
+        setError("Coffee weight and water weight must be greater than 0");
+        throw new Error("Invalid weights");
+      }
+      
+      // Only include optional fields if they have meaningful values
+      if (log.roaster && log.roaster.trim()) cleanedLog.roaster = log.roaster.trim();
+      if (log.grinder && log.grinder.trim()) cleanedLog.grinder = log.grinder.trim();
+      if (log.grindSize && log.grindSize.trim()) cleanedLog.grindSize = log.grindSize.trim();
+      if (log.recipeId && log.recipeId.trim()) cleanedLog.recipeId = log.recipeId.trim();
+      if (log.ratio && log.ratio.trim()) cleanedLog.ratio = log.ratio.trim();
+      if (log.waterTemp && log.waterTemp.trim()) cleanedLog.waterTemp = log.waterTemp.trim();
+      if (log.notes && log.notes.trim()) cleanedLog.notes = log.notes.trim();
+      if (log.timings && Array.isArray(log.timings) && log.timings.length > 0) {
+        cleanedLog.timings = log.timings;
+      }
+      if (log.rating && log.rating > 0 && log.rating <= 5) cleanedLog.rating = log.rating;
+      
+      console.log("Final cleaned brew log data for Firestore:", cleanedLog);
+      
       if (log.id) {
-        const { id, ...data } = log;
-        await updateDoc(doc(db, 'brews', id), data);
+        console.log("Updating existing log with ID:", log.id);
+        await updateDoc(doc(db, 'brews', log.id), cleanedLog);
+        console.log("Brew log updated successfully");
       } else {
-        await addDoc(collection(db, 'brews'), log);
+        console.log("Creating new brew log");
+        const docRef = await addDoc(collection(db, 'brews'), cleanedLog);
+        console.log("Brew log created with ID:", docRef.id);
       }
       navigateToTab('history');
       setEditingLog(null);
     } catch (err) {
+      console.error("saveLog error:", err);
       handleFirestoreError(err, log.id ? OperationType.UPDATE : OperationType.CREATE, 'brews');
       setError(err instanceof Error ? err.message : 'An error occurred while saving the brew log.');
       throw err;
@@ -310,14 +372,30 @@ export default function App() {
   };
 
   const saveBean = async (bean: CoffeeBean) => {
+    console.log("saveBean called with:", bean);
+    console.log("Current user:", user);
+    console.log("User authenticated:", !!user?.uid);
+    
+    if (!user?.uid) {
+      console.error("User not authenticated");
+      setError("You must be signed in to save beans");
+      return;
+    }
+    
     try {
       if (bean.id) {
+        console.log("Updating existing bean with ID:", bean.id);
         const { id, ...data } = bean;
+        console.log("Data to update:", data);
         await updateDoc(doc(db, 'beans', id), data);
+        console.log("Bean updated successfully");
       } else {
-        await addDoc(collection(db, 'beans'), bean);
+        console.log("Creating new bean with data:", bean);
+        const docRef = await addDoc(collection(db, 'beans'), bean);
+        console.log("Bean created with ID:", docRef.id);
       }
     } catch (err) {
+      console.error("saveBean error:", err);
       handleFirestoreError(err, bean.id ? OperationType.UPDATE : OperationType.CREATE, 'beans');
       setError(err instanceof Error ? err.message : 'An error occurred while saving the bean.');
       throw err;
@@ -486,7 +564,7 @@ export default function App() {
                 userId={user.uid} 
                 savedBeans={beans.filter(b => !b.isArchived)} 
                 savedGrinders={grinders} 
-                savedRecipes={recipes}
+                savedRecipes={recipes.filter(r => r.isSaved)}
                 tempUnit={settings.tempUnit}
                 defaultGrinderId={settings.defaultGrinderId}
                 initialData={editingLog}

@@ -158,33 +158,41 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('BrewLogForm submitting with data:', { beanName, roaster, grinder, grindSize, recipeId, coffeeWeight, waterWeight, waterTemp, notes, rating, timings });
     setSaving(true);
     try {
       const cWeight = parseFloat(coffeeWeight) || 0;
       const wWeight = parseFloat(waterWeight) || 0;
       
-      let finalTemp = waterTemp;
+      let finalTemp = waterTemp?.trim();
       if (finalTemp && !finalTemp.includes('°') && !finalTemp.toLowerCase().includes('c') && !finalTemp.toLowerCase().includes('f')) {
         finalTemp = `${finalTemp}°${tempUnit}`;
       }
 
+      // Create a clean log object with only meaningful values
       const log: BrewLog = {
-        ...(initialData || {}),
         userId,
         date: initialData?.date || Timestamp.now(),
-        beanName,
-        roaster,
-        grinder,
-        grindSize,
-        recipeId: recipeId || undefined,
+        beanName: beanName.trim(),
         coffeeWeight: cWeight,
-        waterWeight: wWeight,
-        waterTemp: finalTemp,
-        ratio: `1:${(wWeight / cWeight).toFixed(1)}`,
-        timings,
-        notes,
-        rating
+        waterWeight: wWeight
       };
+      
+      // Only add optional fields if they have meaningful values
+      if (roaster?.trim()) log.roaster = roaster.trim();
+      if (grinder?.trim()) log.grinder = grinder.trim();
+      if (grindSize?.trim()) log.grindSize = grindSize.trim();
+      if (recipeId?.trim()) log.recipeId = recipeId.trim();
+      if (finalTemp?.trim()) log.waterTemp = finalTemp.trim();
+      if (notes?.trim()) log.notes = notes.trim();
+      if (cWeight > 0 && wWeight > 0) {
+        log.ratio = `1:${(wWeight / cWeight).toFixed(1)}`;
+      }
+      if (timings && timings.length > 0) log.timings = timings;
+      if (rating && rating > 0) log.rating = rating;
+      if (initialData?.id) log.id = initialData.id;
+      
+      console.log('Cleaned log data being sent to onSave:', log);
       await onSave(log);
       
       if (!initialData) {

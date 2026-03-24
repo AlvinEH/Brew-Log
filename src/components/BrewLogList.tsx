@@ -2,6 +2,28 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Star, Trash2, ChevronRight, Droplets, Bean, Coffee, Sparkles, Filter, X, History, Scale, Thermometer, Pencil, Hammer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, Recipe, CoffeeBean } from '../types';
+import { Timestamp } from 'firebase/firestore';
+
+interface Props {
+  logs: BrewLog[];
+  onDelete: (id: string) => void;
+  onEdit: (log: BrewLog) => void;
+  savedRecipes: Recipe[];
+  savedBeans: CoffeeBean[];
+}
+
+// Helper function to handle both Timestamp objects and ISO strings
+const getDateFromLog = (dateField: any): Date => {
+  if (dateField instanceof Timestamp) {
+    return dateField.toDate();
+  } else if (typeof dateField === 'string') {
+    return new Date(dateField);
+  } else if (dateField instanceof Date) {
+    return dateField;
+  } else {
+    return new Date(); // fallback
+  }
+};
 
 interface Props {
   logs: BrewLog[];
@@ -24,7 +46,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
 
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
-      const logDate = log.date.toDate();
+      const logDate = getDateFromLog(log.date);
       const logDateStr = logDate.toISOString().split('T')[0];
       
       const dateMatch = (!startDate || logDateStr >= startDate) && 
@@ -147,7 +169,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-1">
                 <Calendar size={12} />
-                {log.date.toDate().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                {getDateFromLog(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                 <motion.div
                   animate={{ rotate: expandedLogId === log.id ? 180 : 0 }}
                   className="ml-auto sm:hidden"

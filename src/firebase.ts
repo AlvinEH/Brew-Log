@@ -15,6 +15,20 @@ const firebaseConfig = {
   firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || ''
 };
 
+// Debug configuration
+console.log('Firebase Config Debug:', {
+  projectId: firebaseConfig.projectId ? '[SET]' : '[MISSING]',
+  apiKey: firebaseConfig.apiKey ? '[SET]' : '[MISSING]',
+  authDomain: firebaseConfig.authDomain ? '[SET]' : '[MISSING]',
+  firestoreDatabaseId: firebaseConfig.firestoreDatabaseId ? '[SET]' : '[MISSING]',
+  usingEnvVars: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  envVarCount: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_FIREBASE_')).length
+});
+
+if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
+  console.error('Firebase configuration incomplete - some requests may fail');
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);

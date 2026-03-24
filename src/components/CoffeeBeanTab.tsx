@@ -97,24 +97,47 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted - starting save process");
+    console.log("Raw form data:", { name, roaster, roastDate, price, weight, flavorProfile, notes, url, isArchived, rating });
+    
+    if (!name.trim() || !roaster.trim()) {
+      console.error("Required fields missing:", { name: name.trim(), roaster: roaster.trim() });
+      return;
+    }
+    
     setSaving(true);
     try {
+      // Clean and validate data to match Firestore rules
       const bean: CoffeeBean = {
         userId,
-        name,
-        roaster,
-        roastDate,
-        price,
-        weight,
-        flavorProfile,
-        notes,
-        url,
-        isArchived,
-        rating: rating > 0 ? rating : undefined
+        name: name.trim(),
+        roaster: roaster.trim()
       };
+      
+      // Only include optional fields if they have meaningful values
+      if (roastDate && roastDate.trim()) bean.roastDate = roastDate.trim();
+      if (price && price.trim()) bean.price = price.trim();
+      if (weight && weight.trim()) bean.weight = weight.trim();
+      // Always include notes when editing (allow clearing), only include when creating if not empty
+      if (editingId || (notes && notes.trim())) bean.notes = notes.trim();
+      if (url && url.trim()) bean.url = url.trim();
+      if (flavorProfile && flavorProfile.length > 0 && flavorProfile.some(f => f.trim())) {
+        bean.flavorProfile = flavorProfile.filter(f => f.trim()).map(f => f.trim());
+      }
+      if (typeof isArchived === 'boolean') bean.isArchived = isArchived;
+      if (rating && rating > 0) bean.rating = rating;
+      
       if (editingId) bean.id = editingId;
       
+      console.log("Cleaned bean data for Firestore:", bean);
+      console.log("Required fields check:", {
+        name: bean.name.length > 0,
+        roaster: bean.roaster.length > 0,
+        userId: !!bean.userId
+      });
+      
       await onSave(bean);
+      console.log("Save successful, resetting form");
       resetForm();
     } catch (err) {
       console.error("Failed to save bean:", err);
@@ -218,15 +241,13 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Roast Date</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-outline opacity-50" size={18} />
-                      <input 
-                        type="date" 
-                        value={roastDate} 
-                        onChange={e => setRoastDate(e.target.value)} 
-                        className="m3-input pl-10 h-11" 
-                      />
-                    </div>
+                    <input 
+                      type="date" 
+                      value={roastDate} 
+                      onChange={e => setRoastDate(e.target.value)} 
+                      className="m3-input h-11 placeholder:opacity-50" 
+                      placeholder="mm/dd/yyyy"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -384,7 +405,7 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
                   </div>
                 )}
 
-                {bean.notes && <p className="text-sm italic opacity-70">"{bean.notes}"</p>}
+                {bean.notes && <p className="text-sm italic opacity-70">{bean.notes}</p>}
               </motion.div>
             ))
           )}
