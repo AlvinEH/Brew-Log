@@ -12,12 +12,23 @@ View your app in AI Studio: https://ai.studio/apps/68823568-fe8c-4a78-83c3-6c9f2
 
 **Prerequisites:**  Node.js
 
-
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. **Configure Firebase:** Set up your Firebase project variables in `.env.local` (copy from `.env.example`)
+3. **For AI Features:** Get a Gemini API key from [AI Studio](https://aistudio.google.com/app/apikey)
+   - **Local development:** Set `GEMINI_API_KEY` in `.env.local`  
+   - **Production/GitHub Pages:** Enter your API key in the app's Settings tab
+4. Run the app:
    `npm run dev`
+
+## AI Features
+
+The coffee bean import and recipe recommender require a Gemini API key:
+
+- **🔒 Secure:** API keys are never exposed in the deployed code
+- **🏠 Local Development:** Use `.env.local` for convenience  
+- **🌐 Production:** Users enter their own API key in Settings → Gemini API Key
+- **🆓 Free:** Get your key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 
 ## Deploy to GitHub Pages
 
@@ -29,11 +40,9 @@ This project is configured for automatic deployment to GitHub Pages.
    - Go to Settings → Pages
    - Source: "GitHub Actions"
 
-2. **Add your API key as a secret**:
-   - Go to Settings → Secrets and variables → Actions
-   - Add a new repository secret: `GEMINI_API_KEY`
+2. **Push to main branch** - deployment happens automatically via GitHub Actions
 
-3. **Push to main branch** - deployment happens automatically via GitHub Actions
+3. **Configure AI features**: Users must enter their own Gemini API key in the app's Settings tab
 
 Your app will be available at: `https://[your-username].github.io/Brew-Log/`
 
@@ -49,4 +58,8 @@ You can also deploy manually using:
 npm run deploy
 ```
 
+<<<<<<< Updated upstream
 **Note:** Make sure you have `gh-pages` installed and your repository is properly configured for GitHub Pages.
+=======
+**Note:** Make sure you have `gh-pages` installed and your repository is properly configured for GitHub Pages. Users will need to provide their own Gemini API key in the app's Settings tab.
+>>>>>>> Stashed changes
