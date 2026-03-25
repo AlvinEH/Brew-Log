@@ -6,7 +6,7 @@ import { Recipe } from '../types';
 import { db, auth, OperationType, handleFirestoreError } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
-export default function RecipeRecommender({ onEdit, savedRecipes = [] }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[] }) {
+export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApiKey }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[], geminiApiKey?: string }) {
   const [recommendedRecipes, setRecommendedRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
   const [queryText, setQueryText] = useState('');
@@ -14,7 +14,7 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [] }: { onEdi
   const fetchRecipes = async () => {
     setLoading(true);
     try {
-      const data = await getRecommendedRecipes(queryText);
+      const data = await getRecommendedRecipes(queryText, geminiApiKey);
       setRecommendedRecipes(data);
     } catch (error) {
       console.error("Error fetching recipes:", error);

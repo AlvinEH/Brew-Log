@@ -2,28 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Star, Trash2, ChevronRight, Droplets, Bean, Coffee, Sparkles, Filter, X, History, Scale, Thermometer, Pencil, Hammer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, Recipe, CoffeeBean } from '../types';
-import { Timestamp } from 'firebase/firestore';
-
-interface Props {
-  logs: BrewLog[];
-  onDelete: (id: string) => void;
-  onEdit: (log: BrewLog) => void;
-  savedRecipes: Recipe[];
-  savedBeans: CoffeeBean[];
-}
-
-// Helper function to handle both Timestamp objects and ISO strings
-const getDateFromLog = (dateField: any): Date => {
-  if (dateField instanceof Timestamp) {
-    return dateField.toDate();
-  } else if (typeof dateField === 'string') {
-    return new Date(dateField);
-  } else if (dateField instanceof Date) {
-    return dateField;
-  } else {
-    return new Date(); // fallback
-  }
-};
 
 interface Props {
   logs: BrewLog[];
@@ -44,9 +22,17 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
     setExpandedLogId(prev => (prev === id ? null : id));
   };
 
+  const getLogDate = (date: any): Date => {
+    if (!date) return new Date();
+    if (typeof date.toDate === 'function') return date.toDate();
+    if (typeof date === 'string') return new Date(date);
+    if (date.seconds) return new Date(date.seconds * 1000);
+    return new Date(date);
+  };
+
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
-      const logDate = getDateFromLog(log.date);
+      const logDate = getLogDate(log.date);
       const logDateStr = logDate.toISOString().split('T')[0];
       
       const dateMatch = (!startDate || logDateStr >= startDate) && 
@@ -158,152 +144,168 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
           <button onClick={clearFilters} className="text-primary font-bold mt-2">Clear all filters</button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredLogs.map((log) => (
-        <div 
-          key={log.id}
-          className="m3-card group relative overflow-hidden cursor-pointer"
-          onClick={() => log.id && toggleExpand(log.id)}
-        >
-          <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-1">
-                <Calendar size={12} />
-                {getDateFromLog(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                <motion.div
-                  animate={{ rotate: expandedLogId === log.id ? 180 : 0 }}
-                  className="ml-auto sm:hidden"
-                >
-                  <ChevronRight size={16} className="rotate-90" />
-                </motion.div>
-              </div>
-              <h3 className="text-xl font-bold mb-1 truncate">{log.beanName}</h3>
-              <p className="text-sm opacity-70 mb-3 truncate">{log.roaster || 'Unknown Roaster'}</p>
-              
-              {log.recipeId && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-3 bg-primary-container/30 w-fit px-2 py-1 rounded-lg">
-                  <Sparkles size={12} />
-                  <span>{savedRecipes.find(r => r.id === log.recipeId)?.title || 'Linked Recipe'}</span>
-                </div>
-              )}
-              
-              <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <Bean size={14} className="opacity-50" />
-                    <span className="font-bold">{log.coffeeWeight}g</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Droplets size={14} className="opacity-50" />
-                    <span className="font-bold">{log.waterWeight}g</span>
-                  </div>
-                  {log.waterTemp && (
-                    <div className="flex items-center gap-1.5">
-                      <Thermometer size={14} className="opacity-50" />
-                      <span className="font-bold">{log.waterTemp}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 bg-primary-container px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-on-primary-container shadow-sm">
-                    <Scale size={12} className="opacity-70" />
-                    <span>{log.ratio}</span>
-                  </div>
-                  {log.grindSize && (
-                    <div className="flex items-center gap-1.5 bg-secondary-container pl-2.5 pr-4 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-on-secondary-container shadow-sm whitespace-nowrap">
-                      <Hammer size={12} className="opacity-70" />
-                      <span>{log.grindSize.toLowerCase().includes('click') ? log.grindSize : `${log.grindSize} clicks`}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-              <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      size={14} 
-                      className={i < (log.rating || 0) ? "fill-primary text-primary" : "text-outline opacity-30"} 
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-1">
-                  <button 
-                    onClick={() => onEdit(log)}
-                    className="p-2 text-primary hover:bg-primary/10 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                    title="Edit brew"
-                  >
-                    <Pencil size={18} />
-                  </button>
-                  <button 
-                    onClick={() => log.id && onDelete(log.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                    title="Delete brew"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-          </div>
-
-          <AnimatePresence initial={false}>
-            {expandedLogId === log.id && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden"
+        <motion.div layout className="space-y-4 overflow-hidden">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filteredLogs.map((log) => (
+              <motion.div 
+                key={log.id}
+                layout="position"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ 
+                  opacity: { duration: 0.2 },
+                  layout: { duration: 0.3, ease: "easeInOut" }
+                }}
+                className="m3-card group relative overflow-hidden cursor-pointer"
+                onClick={() => log.id && toggleExpand(log.id)}
               >
-                {log.timings && log.timings.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-black/5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider opacity-50 mb-2">Brew Timings</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-                      {log.timings.map((t, tIdx) => {
-                        const currentWater = parseFloat(t.waterWeight?.replace(/[^\d.]/g, '') || '0');
-                        const prevWater = tIdx > 0 
-                          ? parseFloat(log.timings![tIdx - 1].waterWeight?.replace(/[^\d.]/g, '') || '0')
-                          : 0;
-                        const diff = currentWater - prevWater;
-                        
-                        return (
-                          <div key={tIdx} className="flex justify-between items-center text-xs">
-                            <span className="opacity-70 truncate mr-2 flex-1">{t.step}</span>
-                            <div className="flex shrink-0 items-center text-right">
-                              <div className="w-10">
-                                {t.waterWeight && diff > 0 && (
-                                  <span className="text-[10px] font-bold text-primary/40">+{diff}g</span>
-                                )}
-                              </div>
-                              <div className="w-12">
-                                {t.waterWeight && <span className="font-bold text-primary">{t.waterWeight}</span>}
-                              </div>
-                              <div className="w-12">
-                                <span className="font-mono opacity-60">{t.time}</span>
-                              </div>
-                            </div>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-1">
+                      <Calendar size={12} />
+                      {getLogDate(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                      <motion.div
+                        animate={{ rotate: expandedLogId === log.id ? 180 : 0 }}
+                        className="ml-auto sm:hidden"
+                      >
+                        <ChevronRight size={16} className="rotate-90" />
+                      </motion.div>
+                    </div>
+                    <h3 className="text-xl font-bold mb-1 truncate">{log.beanName}</h3>
+                    <p className="text-sm opacity-70 mb-3 truncate">{log.roaster || 'Unknown Roaster'}</p>
+                    
+                    {log.recipeId && (
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-3 bg-primary-container/30 w-fit px-2 py-1 rounded-lg">
+                        <Sparkles size={12} />
+                        <span>{savedRecipes.find(r => r.id === log.recipeId)?.title || 'Linked Recipe'}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm items-center">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <Bean size={14} className="opacity-50" />
+                          <span className="font-bold">{log.coffeeWeight}g</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Droplets size={14} className="opacity-50" />
+                          <span className="font-bold">{log.waterWeight}g</span>
+                        </div>
+                        {log.waterTemp && (
+                          <div className="flex items-center gap-1.5">
+                            <Thermometer size={14} className="opacity-50" />
+                            <span className="font-bold">{log.waterTemp}</span>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 bg-primary-container px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-on-primary-container shadow-sm">
+                          <Scale size={12} className="opacity-70" />
+                          <span>{log.ratio}</span>
+                        </div>
+                        {log.grindSize && (
+                          <div className="flex items-center gap-1.5 bg-secondary-container pl-2.5 pr-4 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider text-on-secondary-container shadow-sm whitespace-nowrap">
+                            <Hammer size={12} className="opacity-70" />
+                            <span>{log.grindSize.toLowerCase().includes('click') ? log.grindSize : `${log.grindSize} clicks`}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {log.notes && (
-                  <div className="mt-4 pt-4 border-t border-black/5">
-                    <p className="text-sm italic opacity-70">{log.notes}</p>
-                  </div>
-                )}
+                    <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={14} 
+                            className={i < (log.rating || 0) ? "fill-primary text-primary" : "text-outline opacity-30"} 
+                          />
+                        ))}
+                      </div>
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(log);
+                          }}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                          title="Edit brew"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            log.id && onDelete(log.id);
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                          title="Delete brew"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                </div>
+
+                <AnimatePresence initial={false}>
+                  {expandedLogId === log.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      {log.timings && log.timings.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-black/5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider opacity-50 mb-2">Brew Timings</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                            {log.timings.map((t, tIdx) => {
+                              const currentWater = parseFloat(t.waterWeight?.replace(/[^\d.]/g, '') || '0');
+                              const prevWater = tIdx > 0 
+                                ? parseFloat(log.timings![tIdx - 1].waterWeight?.replace(/[^\d.]/g, '') || '0')
+                                : 0;
+                              const diff = currentWater - prevWater;
+                              
+                              return (
+                                <div key={tIdx} className="flex justify-between items-center text-xs">
+                                  <span className="opacity-70 truncate mr-2 flex-1">{t.step}</span>
+                                  <div className="flex shrink-0 items-center text-right">
+                                    <div className="w-10">
+                                      {t.waterWeight && diff > 0 && (
+                                        <span className="text-[10px] font-bold text-primary/40">+{diff}g</span>
+                                      )}
+                                    </div>
+                                    <div className="w-12">
+                                      {t.waterWeight && <span className="font-bold text-primary">{t.waterWeight}</span>}
+                                    </div>
+                                    <div className="w-12">
+                                      <span className="font-mono opacity-60">{t.time}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {log.notes && (
+                        <div className="mt-4 pt-4 border-t border-black/5">
+                          <p className="text-sm italic opacity-70">{log.notes}</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.div>
-            )}
+            ))}
           </AnimatePresence>
-
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-      ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

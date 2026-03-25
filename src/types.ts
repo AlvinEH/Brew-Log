@@ -9,8 +9,9 @@ export interface BrewTiming {
 export interface BrewLog {
   id?: string;
   userId: string;
-  date: Timestamp;
+  date: Timestamp | string;
   beanName: string;
+  beanId?: string;
   roaster?: string;
   grinder?: string;
   grindSize?: string;
@@ -71,4 +72,6 @@ export interface UserSettings {
   defaultGrinderId?: string;
   theme: 'light' | 'dark' | 'system';
   colorScheme: ColorScheme;
+  lowStockThreshold: number;
+  geminiApiKey?: string;
 }

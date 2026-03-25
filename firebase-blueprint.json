@@ -101,7 +101,9 @@
         "tempUnit": { "type": "string", "enum": ["C", "F"] },
         "defaultGrinderId": { "type": "string" },
         "theme": { "type": "string", "enum": ["light", "dark", "system"] },
-        "colorScheme": { "type": "string", "enum": ["default", "catppuccin", "rose-pine", "gruvbox", "everforest"] }
+        "colorScheme": { "type": "string", "enum": ["default", "catppuccin", "rose-pine", "gruvbox", "everforest"] },
+        "lowStockThreshold": { "type": "number" },
+        "geminiApiKey": { "type": "string" }
       },
       "required": ["userId", "tempUnit", "theme", "colorScheme"]
     }

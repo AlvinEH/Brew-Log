@@ -24,6 +24,8 @@
   
   --color-error-container: var(--color-error-container);
   --color-on-error-container: var(--color-on-error-container);
+  --color-error: var(--color-error);
+  --color-on-error: var(--color-on-error);
 }
 
 :root {
@@ -47,6 +49,8 @@
   
   --color-error-container: #F9DEDC;
   --color-on-error-container: #410E0B;
+  --color-error: #B3261E;
+  --color-on-error: #FFFFFF;
 }
 
 .dark {
@@ -64,6 +68,10 @@
   --color-surface-variant: #49454F;
   --color-on-surface-variant: #CAC4D0;
   --color-outline: #938F99;
+  --color-error: #F2B8B5;
+  --color-on-error: #601410;
+  --color-error-container: #8C1D18;
+  --color-on-error-container: #F9DEDC;
 }
 
 /* Catppuccin Mocha (Dark) */
@@ -214,7 +222,7 @@ body {
   background-color: var(--color-surface-variant);
   border-radius: 1.5rem; /* 24px */
   padding: 1rem;
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (min-width: 640px) {

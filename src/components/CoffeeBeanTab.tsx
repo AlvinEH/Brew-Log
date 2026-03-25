@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit2, Archive, RotateCcw, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractBeanInfoFromUrl } from '../services/gemini';
-import { CoffeeBean } from '../types';
+import { CoffeeBean, BrewLog, UserSettings } from '../types';
 
 interface Props {
   beans: CoffeeBean[];
+  logs: BrewLog[];
   onSave: (bean: CoffeeBean) => Promise<void>;
   onDelete: (id: string) => void;
   userId: string;
@@ -13,9 +14,10 @@ interface Props {
   onFormClose?: () => void;
   onEdit?: (bean: CoffeeBean) => void;
   editingBean?: CoffeeBean | null;
+  settings: UserSettings;
 }
 
-export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingBean }: Props) {
+export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingBean, settings }: Props) {
   const [url, setUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [showForm, setShowForm] = useState(initialShowForm || false);
@@ -36,7 +38,7 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
       setRoaster(editingBean.roaster);
       setRoastDate(editingBean.roastDate || '');
       setPrice(editingBean.price || '');
-      setWeight(editingBean.weight || '');
+      setWeight(editingBean.weight || 'oz');
       setFlavorProfile(editingBean.flavorProfile || []);
       setNotes(editingBean.notes || '');
       setRating(editingBean.rating || 0);
@@ -50,7 +52,7 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
   const [roaster, setRoaster] = useState(editingBean?.roaster || '');
   const [roastDate, setRoastDate] = useState(editingBean?.roastDate || '');
   const [price, setPrice] = useState(editingBean?.price || '');
-  const [weight, setWeight] = useState(editingBean?.weight || '');
+  const [weight, setWeight] = useState(editingBean?.weight?.replace(/\s*oz$/i, '') || '');
   const [flavorProfile, setFlavorProfile] = useState<string[]>(editingBean?.flavorProfile || []);
   const [notes, setNotes] = useState(editingBean?.notes || '');
   const [rating, setRating] = useState(editingBean?.rating || 0);
@@ -59,13 +61,46 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
   const handleImport = async () => {
     if (!url) return;
     setImporting(true);
-    const info = await extractBeanInfoFromUrl(url);
+    const info = await extractBeanInfoFromUrl(url, settings.geminiApiKey);
     if (info) {
       setName(info.name || '');
       setRoaster(info.roaster || '');
       setRoastDate(info.roastDate || '');
-      setPrice(info.price || '');
-      setWeight(info.weight || '');
+      
+      // Format price and weight from import
+      let importedPrice = info.price || '';
+      if (importedPrice && !importedPrice.startsWith('$')) {
+        importedPrice = `$${importedPrice}`;
+      }
+      setPrice(importedPrice);
+
+      let importedWeight = info.weight || '';
+      if (importedWeight) {
+        const lowerWeight = importedWeight.toLowerCase();
+        // If it already has oz, we trust the AI's extraction (which is now instructed to only get oz)
+        if (lowerWeight.includes('oz')) {
+          // Just ensure it's a clean oz string if there's extra text
+          const numericMatch = importedWeight.match(/(\d+(\.\d+)?)\s*oz/i);
+          if (numericMatch) {
+            importedWeight = numericMatch[1] + 'oz';
+          }
+        } else {
+          const numericValue = parseFloat(importedWeight.replace(/[^0-9.]/g, ''));
+          if (!isNaN(numericValue)) {
+            if (lowerWeight.includes('kg')) {
+              importedWeight = (numericValue * 35.274).toFixed(1) + 'oz';
+            } else if (lowerWeight.includes('g')) {
+              importedWeight = (numericValue * 0.035274).toFixed(1) + 'oz';
+            } else if (lowerWeight.includes('lb')) {
+              importedWeight = (numericValue * 16).toFixed(1) + 'oz';
+            } else {
+              importedWeight = numericValue + 'oz';
+            }
+          }
+        }
+      }
+      setWeight(importedWeight.replace(/\s*oz$/i, ''));
+      
       setFlavorProfile(info.flavorProfile || []);
       setShowForm(true);
     }
@@ -78,7 +113,7 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
     setRoaster(bean.roaster);
     setRoastDate(bean.roastDate || '');
     setPrice(bean.price || '');
-    setWeight(bean.weight || '');
+    setWeight(bean.weight?.replace(/\s*oz$/i, '') || '');
     setFlavorProfile(bean.flavorProfile || []);
     setNotes(bean.notes || '');
     setRating(bean.rating || 0);
@@ -116,8 +151,22 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
       
       // Only include optional fields if they have meaningful values
       if (roastDate && roastDate.trim()) bean.roastDate = roastDate.trim();
-      if (price && price.trim()) bean.price = price.trim();
-      if (weight && weight.trim()) bean.weight = weight.trim();
+      
+      if (price && price.trim()) {
+        let p = price.trim();
+        if (!p.startsWith('$')) p = '$' + p;
+        bean.price = p;
+      }
+      
+      if (weight && weight.trim()) {
+        let w = weight.trim();
+        const lowerW = w.toLowerCase();
+        if (!lowerW.endsWith('oz') && !lowerW.endsWith('g') && !lowerW.endsWith('kg') && !lowerW.endsWith('lb')) {
+          w = w + 'oz';
+        }
+        bean.weight = w;
+      }
+      
       // Always include notes when editing (allow clearing), only include when creating if not empty
       if (editingId || (notes && notes.trim())) bean.notes = notes.trim();
       if (url && url.trim()) bean.url = url.trim();
@@ -165,6 +214,52 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
   const filteredBeans = beans.filter(bean => 
     activeTab === 'stock' ? !bean.isArchived : bean.isArchived
   );
+
+  const getRemainingWeight = (bean: CoffeeBean) => {
+    const numericWeight = parseFloat(bean.weight?.replace(/[^0-9.]/g, '') || '0');
+    if (!numericWeight) return null;
+    
+    // Convert to grams if needed
+    let initialWeightGrams = numericWeight;
+    if (bean.weight?.toLowerCase().includes('oz')) {
+      initialWeightGrams = numericWeight * 28.3495;
+    } else if (bean.weight?.toLowerCase().includes('lb')) {
+      initialWeightGrams = numericWeight * 453.592;
+    } else if (bean.weight?.toLowerCase().includes('kg')) {
+      initialWeightGrams = numericWeight * 1000;
+    }
+
+    const usedWeight = logs
+      .filter(log => {
+        // Match by ID if available
+        if (log.beanId && bean.id && log.beanId === bean.id) return true;
+        
+        // Fallback: Match by name and roaster if ID is missing or doesn't match
+        // This handles logs created before the ID system or logs where the ID wasn't linked
+        const logName = log.beanName?.trim().toLowerCase();
+        const beanName = bean.name.trim().toLowerCase();
+        const logRoaster = log.roaster?.trim().toLowerCase();
+        const beanRoaster = bean.roaster.trim().toLowerCase();
+        
+        return logName === beanName && logRoaster === beanRoaster;
+      })
+      .reduce((sum, log) => sum + (log.coffeeWeight || 0), 0);
+    return Math.max(0, initialWeightGrams - usedWeight);
+  };
+
+  const getInitialWeightGrams = (bean: CoffeeBean) => {
+    const numericWeight = parseFloat(bean.weight?.replace(/[^0-9.]/g, '') || '0');
+    if (!numericWeight) return 0;
+    
+    if (bean.weight?.toLowerCase().includes('oz')) {
+      return numericWeight * 28.3495;
+    } else if (bean.weight?.toLowerCase().includes('lb')) {
+      return numericWeight * 453.592;
+    } else if (bean.weight?.toLowerCase().includes('kg')) {
+      return numericWeight * 1000;
+    }
+    return numericWeight;
+  };
 
   return (
     <div className="space-y-6">
@@ -252,11 +347,29 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Price</label>
-                      <input placeholder="e.g. $22" value={price} onChange={e => setPrice(e.target.value)} className="m3-input h-11" />
+                      <input 
+                        placeholder="e.g. $22" 
+                        value={price} 
+                        onChange={e => setPrice(e.target.value)} 
+                        onBlur={() => {
+                          if (price && !price.startsWith('$')) {
+                            setPrice('$' + price);
+                          }
+                        }}
+                        className="m3-input h-11" 
+                      />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Weight</label>
-                      <input placeholder="e.g. 250g" value={weight} onChange={e => setWeight(e.target.value)} className="m3-input h-11" />
+                      <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Weight (oz)</label>
+                      <div className="relative">
+                        <input 
+                          placeholder="e.g. 12" 
+                          value={weight} 
+                          onChange={e => setWeight(e.target.value)} 
+                          className="m3-input h-11 pr-10" 
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold opacity-30 pointer-events-none">oz</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -315,32 +428,56 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
       </AnimatePresence>
 
       {!showForm && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {filteredBeans.length === 0 ? (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="col-span-full py-12 text-center opacity-50"
-              >
-                <Bean size={48} className="mx-auto mb-4 opacity-20" />
-                <p>No {activeTab} beans found.</p>
-              </motion.div>
-            ) : (
-              filteredBeans.map((bean) => (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div 
+            key={activeTab}
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="grid gap-4 md:grid-cols-2 overflow-hidden"
+          >
+            <AnimatePresence mode="popLayout" initial={false}>
+              {filteredBeans.length === 0 ? (
                 <motion.div 
-                  key={bean.id}
+                  key="empty-state"
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="m3-card relative group"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="col-span-full py-12 text-center opacity-50"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-lg font-bold">{bean.name}</h3>
-                      <p className="text-sm opacity-70">{bean.roaster}</p>
-                    </div>
+                  <Bean size={48} className="mx-auto mb-4 opacity-20" />
+                  <p>No {activeTab} beans found.</p>
+                </motion.div>
+              ) : (
+                filteredBeans.map((bean) => {
+                  const remaining = getRemainingWeight(bean);
+                  const initialWeightGrams = getInitialWeightGrams(bean);
+                  const percentage = initialWeightGrams ? (remaining! / initialWeightGrams) * 100 : 0;
+
+                  return (
+                    <motion.div 
+                      key={bean.id}
+                      layout="position"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ 
+                        opacity: { duration: 0.2 },
+                        layout: { duration: 0.3, ease: "easeInOut" }
+                      }}
+                      className="m3-card relative group"
+                    >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-bold">{bean.name}</h3>
+                        </div>
+                        <p className="text-sm opacity-70">{bean.roaster}</p>
+                      </div>
                     <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => handleToggleArchive(bean)}
@@ -395,6 +532,27 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
                     )}
                   </div>
 
+                  {remaining !== null && !bean.isArchived && (
+                    <div className="mb-4">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1">
+                        <span className="opacity-50">
+                          Stock Level
+                        </span>
+                        <div className="flex gap-4 items-center">
+                          <span className="opacity-50">{Math.round(remaining)}g / {Math.round(initialWeightGrams)}g</span>
+                          <span className="text-primary font-black">{Math.round(percentage)}%</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          className="h-full rounded-full bg-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                 {bean.flavorProfile && bean.flavorProfile.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
                     {bean.flavorProfile.map((note, i) => (
@@ -407,11 +565,13 @@ export default function CoffeeBeanTab({ beans, onSave, onDelete, userId, initial
 
                 {bean.notes && <p className="text-sm italic opacity-70">{bean.notes}</p>}
               </motion.div>
-            ))
-          )}
-        </AnimatePresence>
-        </div>
-      )}
-    </div>
-  );
+            );
+          })
+        )}
+      </AnimatePresence>
+    </motion.div>
+  </AnimatePresence>
+)}
+</div>
+);
 }

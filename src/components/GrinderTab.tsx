@@ -152,15 +152,19 @@ export default function GrinderTab({ grinders, onSave, onDelete, userId, initial
       </AnimatePresence>
 
       {!showForm && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <AnimatePresence initial={false}>
+        <motion.div layout className="grid gap-4 md:grid-cols-2 overflow-hidden">
+          <AnimatePresence mode="popLayout" initial={false}>
             {grinders.map((grinder) => (
               <motion.div 
                 key={grinder.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                layout="position"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ 
+                  opacity: { duration: 0.2 },
+                  layout: { duration: 0.3, ease: "easeInOut" }
+                }}
                 className="m3-card relative group"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -206,7 +210,7 @@ export default function GrinderTab({ grinders, onSave, onDelete, userId, initial
               <p>No grinders saved yet. Add one to track your settings!</p>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

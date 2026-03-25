@@ -11,6 +11,7 @@ service cloud.firestore {
     //   - userId: string (required, immutable) - The UID of the user who created the log.
     //   - date: string (required, format: date-time) - The date and time of the brew.
     //   - beanName: string (required) - Name of the coffee beans used.
+    //   - beanId: string (optional) - The ID of the saved coffee bean used.
     //   - roaster: string (optional) - Name of the coffee roaster.
     //   - grinder: string (optional) - The grinder used.
     //   - grindSize: string (optional) - The grind size setting.
@@ -33,6 +34,8 @@ service cloud.firestore {
     //   - isArchived: bool (optional)
     //   - price: string (optional)
     //   - weight: string (optional)
+    //   - initialWeightGrams: number (optional)
+    //   - lowStockThreshold: number (optional)
     //   - flavorProfile: list (optional)
     //   - url: string (optional)
     //   - notes: string (optional)
@@ -109,12 +112,12 @@ service cloud.firestore {
 
     function isValidUrl(url) {
       return url is string && url.size() < 500 &&
-        (url.matches("^https://.*") || url.matches("^http://.*"));
+        (url == "" || url.matches("^https://.*") || url.matches("^http://.*"));
     }
 
     function isValidDateString(dateStr) {
       return dateStr is string &&
-        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}.*Z?)?$");
     }
 
     function isAdmin() {
@@ -128,14 +131,15 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidBrewLog(data) {
-      let allowedFields = ['userId', 'date', 'beanName', 'roaster', 'grinder', 'grindSize', 'recipeId', 'coffeeWeight', 'waterWeight', 'ratio', 'waterTemp', 'timings', 'notes', 'rating'];
+      let allowedFields = ['userId', 'date', 'beanName', 'beanId', 'roaster', 'grinder', 'grindSize', 'recipeId', 'coffeeWeight', 'waterWeight', 'ratio', 'waterTemp', 'timings', 'notes', 'rating'];
       return hasRequiredFields(['userId', 'date', 'beanName', 'coffeeWeight', 'waterWeight']) &&
         hasOnlyAllowedFields(allowedFields) &&
         data.userId is string &&
-        isValidDateString(data.date) &&
+        (data.date is timestamp || isValidDateString(data.date)) &&
         data.beanName is string && data.beanName.size() > 0 && data.beanName.size() < 100 &&
         data.coffeeWeight is number && data.coffeeWeight >= 0 && data.coffeeWeight < 10000 &&
         data.waterWeight is number && data.waterWeight >= 0 && data.waterWeight < 100000 &&
+        (!('beanId' in data) || (data.beanId is string && data.beanId.size() < 100)) &&
         (!('roaster' in data) || (data.roaster is string && data.roaster.size() < 100)) &&
         (!('grinder' in data) || (data.grinder is string && data.grinder.size() < 100)) &&
         (!('grindSize' in data) || (data.grindSize is string && data.grindSize.size() < 50)) &&
@@ -144,7 +148,7 @@ service cloud.firestore {
         (!('waterTemp' in data) || (data.waterTemp is string && data.waterTemp.size() < 20)) &&
         (!('timings' in data) || isValidList(data.timings, 50)) &&
         (!('notes' in data) || (data.notes is string && data.notes.size() < 2000)) &&
-        (!('rating' in data) || (data.rating is number && data.rating >= 1 && data.rating <= 5));
+        (!('rating' in data) || (data.rating is number && data.rating >= 0 && data.rating <= 5));
     }
 
     function isValidCoffeeBean(data) {
@@ -161,11 +165,11 @@ service cloud.firestore {
         (!('flavorProfile' in data) || isValidList(data.flavorProfile, 20)) &&
         (!('url' in data) || isValidUrl(data.url)) &&
         (!('notes' in data) || (data.notes is string && data.notes.size() < 1000)) &&
-        (!('rating' in data) || (data.rating is number && data.rating >= 1 && data.rating <= 5));
+        (!('rating' in data) || (data.rating is number && data.rating >= 0 && data.rating <= 5));
     }
 
     function isValidRecipe(data) {
-      let allowedFields = ['userId', 'title', 'source', 'description', 'coffeeWeight', 'waterWeight', 'ratio', 'steps', 'timings', 'url', 'createdAt', 'id'];
+      let allowedFields = ['userId', 'title', 'source', 'description', 'coffeeWeight', 'waterWeight', 'ratio', 'steps', 'timings', 'url', 'createdAt', 'id', 'isSaved'];
       // Note: App adds 'createdAt' and sometimes 'id' is passed in the object before being stripped
       return hasRequiredFields(['userId', 'title', 'source', 'coffeeWeight', 'waterWeight', 'ratio', 'steps']) &&
         hasOnlyAllowedFields(allowedFields) &&
@@ -179,6 +183,7 @@ service cloud.firestore {
         (!('description' in data) || (data.description is string && data.description.size() < 1000)) &&
         (!('timings' in data) || isValidList(data.timings, 50)) &&
         (!('url' in data) || isValidUrl(data.url)) &&
+        (!('isSaved' in data) || (data.isSaved is bool)) &&
         (!('createdAt' in data) || isValidDateString(data.createdAt));
     }
 
@@ -194,14 +199,16 @@ service cloud.firestore {
     }
 
     function isValidUserSettings(data) {
-      let allowedFields = ['userId', 'tempUnit', 'theme', 'colorScheme', 'defaultGrinderId'];
+      let allowedFields = ['userId', 'tempUnit', 'theme', 'colorScheme', 'defaultGrinderId', 'lowStockThreshold', 'geminiApiKey'];
       return hasRequiredFields(['userId', 'tempUnit', 'theme', 'colorScheme']) &&
         hasOnlyAllowedFields(allowedFields) &&
         data.userId is string &&
         data.tempUnit in ['C', 'F'] &&
         data.theme in ['light', 'dark', 'system'] &&
         data.colorScheme in ['default', 'catppuccin', 'rose-pine', 'gruvbox', 'everforest'] &&
-        (!('defaultGrinderId' in data) || (data.defaultGrinderId is string && data.defaultGrinderId.size() < 100));
+        (!('defaultGrinderId' in data) || (data.defaultGrinderId is string && data.defaultGrinderId.size() < 100)) &&
+        (!('lowStockThreshold' in data) || (data.lowStockThreshold is number && data.lowStockThreshold >= 0)) &&
+        (!('geminiApiKey' in data) || (data.geminiApiKey is string && data.geminiApiKey.size() < 200));
     }
 
     // ===============================================================

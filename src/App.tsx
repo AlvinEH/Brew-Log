@@ -89,7 +89,8 @@ export default function App() {
     userId: '', 
     tempUnit: 'F',
     theme: 'system',
-    colorScheme: 'default'
+    colorScheme: 'default',
+    lowStockThreshold: 50
   });
   const [error, setError] = useState<string | null>(null);
   const [editingLog, setEditingLog] = useState<BrewLog | null>(null);
@@ -263,11 +264,12 @@ export default function App() {
           tempUnit: 'F',
           theme: 'system',
           colorScheme: 'default',
+          lowStockThreshold: 50,
           ...data
         } as UserSettings);
       } else {
         // Default settings
-        setSettings({ userId: user.uid, tempUnit: 'F', theme: 'system', colorScheme: 'default' });
+        setSettings({ userId: user.uid, tempUnit: 'F', theme: 'system', colorScheme: 'default', lowStockThreshold: 50 });
       }
       setDataLoaded(prev => prev.settings ? prev : { ...prev, settings: true });
     }, (err) => {
@@ -299,10 +301,17 @@ export default function App() {
     }
     
     try {
-      // Convert Timestamp to ISO string for Firestore rules
-      const dateString = log.date instanceof Timestamp 
-        ? log.date.toDate().toISOString()
-        : new Date().toISOString();
+      let dateString: string;
+      if (log.date instanceof Timestamp) {
+        dateString = log.date.toDate().toISOString();
+      } else if (typeof log.date === 'string') {
+        dateString = log.date;
+      } else if (log.date && (log.date as any).seconds) {
+        // Handle POJO version of Timestamp that sometimes comes back from Firestore
+        dateString = new Date((log.date as any).seconds * 1000).toISOString();
+      } else {
+        dateString = new Date().toISOString();
+      }
       
       // Clean and validate data to match Firestore rules
       const cleanedLog: any = {
@@ -325,6 +334,7 @@ export default function App() {
       }
       
       // Only include optional fields if they have meaningful values
+      if (log.beanId && log.beanId.trim()) cleanedLog.beanId = log.beanId.trim();
       if (log.roaster && log.roaster.trim()) cleanedLog.roaster = log.roaster.trim();
       if (log.grinder && log.grinder.trim()) cleanedLog.grinder = log.grinder.trim();
       if (log.grindSize && log.grindSize.trim()) cleanedLog.grindSize = log.grindSize.trim();
@@ -553,7 +563,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="tab-content-wrapper"
+            className="tab-content-wrapper overflow-hidden"
           >
             {activeTab === 'history' && (
               <BrewLogList logs={logs} onDelete={deleteLog} onEdit={handleEditLog} savedRecipes={recipes} savedBeans={beans} />
@@ -578,6 +588,7 @@ export default function App() {
             {activeTab === 'beans' && (
               <CoffeeBeanTab 
                 beans={beans} 
+                logs={logs}
                 onSave={saveBean} 
                 onDelete={deleteBean} 
                 userId={user.uid} 
@@ -585,11 +596,13 @@ export default function App() {
                   setEditingBean(bean);
                   navigateToTab('new-bean');
                 }}
+                settings={settings}
               />
             )}
             {activeTab === 'new-bean' && (
               <CoffeeBeanTab 
                 beans={beans} 
+                logs={logs}
                 onSave={saveBean} 
                 onDelete={deleteBean} 
                 userId={user.uid} 
@@ -599,6 +612,7 @@ export default function App() {
                   setActiveTab(previousTab);
                 }}
                 editingBean={editingBean}
+                settings={settings}
               />
             )}
             {activeTab === 'grinders' && (
@@ -666,6 +680,7 @@ export default function App() {
                       </div>
                       <RecipeRecommender 
                         savedRecipes={recipes.filter(r => r.isSaved)}
+                        geminiApiKey={settings.geminiApiKey}
                         onEdit={(recipe) => {
                           setEditingRecipe(recipe);
                           setShowRecipeForm(true);
@@ -776,6 +791,33 @@ export default function App() {
                                 <option key={g.id} value={g.id}>{g.name}</option>
                               ))}
                             </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Gemini API Key (Optional)</label>
+                            <div className="space-y-2">
+                              <input 
+                                type="password"
+                                placeholder="Paste your Gemini API key here..."
+                                value={settings.geminiApiKey || ''}
+                                onChange={(e) => updateSettings({ geminiApiKey: e.target.value })}
+                                className="m3-input w-full"
+                              />
+                              <p className="text-[10px] opacity-50 px-1">
+                                Required for AI features if not configured on the server. Get one at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">AI Studio</a>.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Low Stock Alert Threshold (g)</label>
+                            <input 
+                              type="number"
+                              value={settings.lowStockThreshold}
+                              onChange={(e) => updateSettings({ lowStockThreshold: parseInt(e.target.value) || 0 })}
+                              className="m3-input w-full bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all"
+                              placeholder="e.g. 50"
+                            />
                           </div>
                         </div>
                       </div>

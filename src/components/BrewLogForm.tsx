@@ -19,6 +19,7 @@ interface Props {
 
 export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders, savedRecipes, tempUnit, defaultGrinderId, initialData, onCancel, onSaveAsRecipe }: Props) {
   const [beanName, setBeanName] = useState(initialData?.beanName || '');
+  const [beanId, setBeanId] = useState(initialData?.beanId || '');
   const [roaster, setRoaster] = useState(initialData?.roaster || '');
   const [grinder, setGrinder] = useState(initialData?.grinder || (() => {
     if (defaultGrinderId) {
@@ -70,6 +71,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
 
   const selectSavedBean = (bean: CoffeeBean) => {
     setBeanName(bean.name);
+    setBeanId(bean.id || '');
     setRoaster(bean.roaster);
     setShowBeanSelector(false);
   };
@@ -174,6 +176,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
         userId,
         date: initialData?.date || Timestamp.now(),
         beanName: beanName.trim(),
+        beanId: beanId || undefined,
         coffeeWeight: cWeight,
         waterWeight: wWeight
       };

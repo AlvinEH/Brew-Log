@@ -33,7 +33,21 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
 
   const updateTiming = (idx: number, field: keyof BrewTiming, val: string) => {
     const newTimings = [...timings];
-    newTimings[idx][field] = val;
+    let finalVal = val;
+    
+    if (field === 'waterWeight') {
+      const oldVal = timings[idx].waterWeight || '';
+      // If deleting the 'g', allow it temporarily so they can continue deleting numbers
+      if (oldVal.endsWith('g') && val === oldVal.slice(0, -1)) {
+        finalVal = val;
+      } else if (val && !val.endsWith('g')) {
+        // Automatically append 'g' if it's a numeric value
+        const numeric = val.replace(/[^0-9.]/g, '');
+        if (numeric) finalVal = `${numeric}g`;
+      }
+    }
+    
+    newTimings[idx][field] = finalVal;
     setTimings(newTimings);
   };
 
