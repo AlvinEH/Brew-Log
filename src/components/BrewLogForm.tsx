@@ -251,12 +251,12 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
             <div className="relative">
               <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Bean Name*</label>
               <div className="flex gap-2 items-center">
-                <input required value={beanName} onChange={e => setBeanName(e.target.value)} className="m3-input flex-1 w-0 h-11" placeholder="e.g. Ethiopia Yirgacheffe" />
+                <input required value={beanName} onChange={e => setBeanName(e.target.value)} className="m3-input flex-1 w-0 h-12" placeholder="e.g. Ethiopia Yirgacheffe" />
                 {savedBeans.length > 0 && (
                   <button 
                     type="button" 
                     onClick={() => setShowBeanSelector(!showBeanSelector)}
-                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-11 h-11 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
+                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-12 h-12 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
                     title="Select saved bean"
                   >
                     <ChevronDown size={20} />
@@ -289,7 +289,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Roaster</label>
-              <input value={roaster} onChange={e => setRoaster(e.target.value)} className="m3-input h-11" placeholder="e.g. Onyx Coffee Lab" />
+              <input value={roaster} onChange={e => setRoaster(e.target.value)} className="m3-input h-12" placeholder="e.g. Onyx Coffee Lab" />
             </div>
           </div>
 
@@ -299,7 +299,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
               <div className="flex gap-2 items-center">
                 <div 
                   onClick={() => savedRecipes.length > 0 && setShowRecipeSelector(!showRecipeSelector)}
-                  className={`m3-input flex-1 w-0 h-11 bg-surface-variant/30 flex items-center px-4 overflow-hidden ${savedRecipes.length > 0 ? 'cursor-pointer hover:bg-surface-variant/50' : ''}`}
+                  className={`m3-input flex-1 w-0 h-12 bg-surface-variant/30 flex items-center px-4 overflow-hidden ${savedRecipes.length > 0 ? 'cursor-pointer hover:bg-surface-variant/50' : ''}`}
                 >
                   <Sparkles size={16} className="mr-2 text-primary shrink-0" />
                   <span className="truncate opacity-70 flex-1 min-w-0">
@@ -310,7 +310,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
                   <button 
                     type="button" 
                     onClick={() => setShowRecipeSelector(!showRecipeSelector)}
-                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-11 h-11 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
+                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-12 h-12 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
                     title="Select saved recipe"
                   >
                     <ChevronDown size={20} />
@@ -355,12 +355,12 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
             <div className="relative">
               <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Grinder</label>
               <div className="flex gap-2 items-center">
-                <input value={grinder} onChange={e => setGrinder(e.target.value)} className="m3-input flex-1 w-0 h-11" placeholder="e.g. Comandante C40" />
+                <input value={grinder} onChange={e => setGrinder(e.target.value)} className="m3-input flex-1 w-0 h-12" placeholder="e.g. Comandante C40" />
                 {savedGrinders.length > 0 && (
                   <button 
                     type="button" 
                     onClick={() => setShowGrinderSelector(!showGrinderSelector)}
-                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-11 h-11 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
+                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-12 h-12 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
                     title="Select saved grinder"
                   >
                     <ChevronDown size={20} />
@@ -393,7 +393,7 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Grind Size (Clicks)</label>
-              <input value={grindSize} onChange={e => setGrindSize(e.target.value)} className="m3-input h-11" placeholder="e.g. 25 clicks" />
+              <input value={grindSize} onChange={e => setGrindSize(e.target.value)} className="m3-input h-12" placeholder="e.g. 25 clicks" />
             </div>
           </div>
         </div>
@@ -469,13 +469,13 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
                 placeholder="Water (g)" 
                 value={t.waterWeight || ''} 
                 onChange={e => updateTiming(idx, 'waterWeight', e.target.value)}
-                className="m3-input w-24 h-11"
+                className="m3-input w-24 h-12"
               />
               <input 
                 placeholder="Time" 
                 value={t.time} 
                 onChange={e => updateTiming(idx, 'time', e.target.value)}
-                className="m3-input w-24 h-11"
+                className="m3-input w-24 h-12"
               />
               <div className="flex-1" />
               <button type="button" onClick={() => removeTiming(idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-full shrink-0">

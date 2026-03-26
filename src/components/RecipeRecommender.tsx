@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getRecommendedRecipes } from '../services/gemini';
 import { Recipe } from '../types';
@@ -10,14 +10,33 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApi
   const [recommendedRecipes, setRecommendedRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
   const [queryText, setQueryText] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const fetchRecipes = async () => {
     setLoading(true);
+    setError(null);
     try {
+      if (!geminiApiKey && !process.env.GEMINI_API_KEY) {
+        setError("Gemini API key is missing. Please add it in Settings > Preferences.");
+        setLoading(false);
+        return;
+      }
+
       const data = await getRecommendedRecipes(queryText, geminiApiKey);
-      setRecommendedRecipes(data);
-    } catch (error) {
-      console.error("Error fetching recipes:", error);
+      if (data && data.length > 0) {
+        setRecommendedRecipes(data);
+      } else {
+        setError("No recipes found. Try a different search term.");
+      }
+    } catch (err: any) {
+      console.error("Error fetching recipes:", err);
+      let message = "Failed to fetch recipes. Please try again.";
+      if (err?.message?.includes("429") || err?.message?.includes("quota")) {
+        message = "Gemini API rate limit exceeded (429). If you haven't set a personal API key in Settings, the shared key might be exhausted. Please try again later or add your own key.";
+      } else if (err?.message?.includes("API_KEY_INVALID") || err?.message?.includes("invalid API key")) {
+        message = "Invalid Gemini API key. Please check your settings.";
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -86,6 +105,17 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApi
             Find
           </button>
         </div>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="flex items-center gap-2 text-destructive text-xs font-bold mt-4 bg-destructive/10 p-3 rounded-xl border border-destructive/20"
+          >
+            <AlertCircle size={14} className="shrink-0" />
+            <span>{error}</span>
+          </motion.div>
+        )}
       </div>
 
       {savedRecipes.length > 0 && (

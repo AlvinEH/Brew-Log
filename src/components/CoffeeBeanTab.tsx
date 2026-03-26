@@ -329,7 +329,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
               <select 
                 value={selectedRoaster}
                 onChange={(e) => setSelectedRoaster(e.target.value)}
-                className="m3-input h-10 text-sm font-bold appearance-none bg-surface-variant/30 border-none rounded-xl px-4 pr-10 hover:bg-surface-variant/50 transition-colors cursor-pointer"
+                className="m3-input h-12 text-sm font-bold appearance-none bg-surface-variant/30 border-none rounded-xl px-4 pr-10 hover:bg-surface-variant/50 transition-colors cursor-pointer"
               >
                 {roasters.map(r => (
                   <option key={r} value={r}>{r}</option>
@@ -398,11 +398,11 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Bean Name*</label>
-                    <input required placeholder="e.g. Ethiopia Yirgacheffe" value={name} onChange={e => setName(e.target.value)} className="m3-input h-11" />
+                    <input required placeholder="e.g. Ethiopia Yirgacheffe" value={name} onChange={e => setName(e.target.value)} className="m3-input h-12" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Roaster*</label>
-                    <input required placeholder="e.g. Onyx Coffee Lab" value={roaster} onChange={e => setRoaster(e.target.value)} className="m3-input h-11" />
+                    <input required placeholder="e.g. Onyx Coffee Lab" value={roaster} onChange={e => setRoaster(e.target.value)} className="m3-input h-12" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Roast Date</label>
@@ -410,7 +410,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                       type="date" 
                       value={roastDate} 
                       onChange={e => setRoastDate(e.target.value)} 
-                      className="m3-input h-11 placeholder:opacity-50" 
+                      className="m3-input h-12 placeholder:opacity-50" 
                       placeholder="mm/dd/yyyy"
                     />
                   </div>
@@ -426,7 +426,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                             setPrice('$' + price);
                           }
                         }}
-                        className="m3-input h-11" 
+                        className="m3-input h-12" 
                       />
                     </div>
                     <div>
@@ -436,7 +436,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                           placeholder="e.g. 12" 
                           value={weight} 
                           onChange={e => setWeight(e.target.value)} 
-                          className="m3-input h-11 pr-10" 
+                          className="m3-input h-12 pr-10" 
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold opacity-30 pointer-events-none">oz</span>
                       </div>
@@ -454,7 +454,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                       placeholder="e.g. Chocolate, Berry, Citrus" 
                       value={flavorProfile.join(', ')} 
                       onChange={e => setFlavorProfile(e.target.value.split(',').map(s => s.trim()))}
-                      className="m3-input h-11" 
+                      className="m3-input h-12" 
                     />
                   </div>
 

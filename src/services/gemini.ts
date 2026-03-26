@@ -11,53 +11,60 @@ export async function getRecommendedRecipes(coffeeType?: string, customKey?: str
     ? `Recommend 3 popular pourover coffee recipes for ${coffeeType} beans. Include source, description, coffee weight (g), water weight (g), ratio, step-by-step instructions, specific timings for each step (e.g., 0:45, 1:30), and the cumulative water weight to pour for each step (e.g., 50g, 150g).`
     : "Recommend 3 popular pourover coffee recipes (e.g., V60, Chemex, Kalita Wave). Include source, description, coffee weight (g), water weight (g), ratio, step-by-step instructions, specific timings for each step (e.g., 0:45, 1:30), and the cumulative water weight to pour for each step (e.g., 50g, 150g).";
 
-  const response = await ai.models.generateContent({
-    model: "gemini-flash-latest",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-      responseMimeType: "application/json",
-      maxOutputTokens: 4000,
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            source: { type: Type.STRING },
-            description: { type: Type.STRING },
-            coffeeWeight: { type: Type.NUMBER },
-            waterWeight: { type: Type.NUMBER },
-            ratio: { type: Type.STRING },
-            steps: { 
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-flash-latest",
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        maxOutputTokens: 4000,
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              source: { type: Type.STRING },
+              description: { type: Type.STRING },
+              coffeeWeight: { type: Type.NUMBER },
+              waterWeight: { type: Type.NUMBER },
+              ratio: { type: Type.STRING },
+              steps: { 
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              timings: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    step: { type: Type.STRING },
+                    time: { type: Type.STRING },
+                    waterWeight: { type: Type.STRING }
+                  },
+                  required: ["step", "time", "waterWeight"]
+                }
+              },
+              url: { type: Type.STRING }
             },
-            timings: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  step: { type: Type.STRING },
-                  time: { type: Type.STRING },
-                  waterWeight: { type: Type.STRING }
-                },
-                required: ["step", "time", "waterWeight"]
-              }
-            },
-            url: { type: Type.STRING }
-          },
-          required: ["title", "source", "description", "coffeeWeight", "waterWeight", "ratio", "steps", "timings"]
+            required: ["title", "source", "description", "coffeeWeight", "waterWeight", "ratio", "steps", "timings"]
+          }
         }
       }
-    }
-  });
+    });
 
-  try {
     return JSON.parse(response.text || "[]");
-  } catch (e) {
-    console.error("Failed to parse recipes:", e);
-    return [];
+  } catch (e: any) {
+    console.error("Failed to fetch or parse recipes:", e);
+    // Re-throw with more context if it's a rate limit or auth error
+    if (e?.message?.includes("429") || e?.message?.includes("quota")) {
+      throw new Error("Gemini API rate limit exceeded (429).");
+    }
+    if (e?.message?.includes("API_KEY_INVALID") || e?.message?.includes("invalid API key")) {
+      throw new Error("Invalid Gemini API key.");
+    }
+    throw e;
   }
 }
 
@@ -107,8 +114,15 @@ export async function extractBeanInfoFromUrl(url: string, customKey?: string) {
     }
 
     return JSON.parse(response.text);
-  } catch (e) {
+  } catch (e: any) {
     console.error("Failed to extract or parse bean info:", e);
+    // Re-throw with more context if it's a rate limit or auth error
+    if (e?.message?.includes("429") || e?.message?.includes("quota")) {
+      throw new Error("Gemini API rate limit exceeded (429).");
+    }
+    if (e?.message?.includes("API_KEY_INVALID") || e?.message?.includes("invalid API key")) {
+      throw new Error("Invalid Gemini API key.");
+    }
     throw e; // Re-throw to be caught by the UI handler
   }
 }

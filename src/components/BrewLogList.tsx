@@ -97,7 +97,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
                       type="date" 
                       value={startDate} 
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="m3-input h-10 text-sm"
+                      className="m3-input h-12 text-sm"
                     />
                   </div>
                   <div className="space-y-1">
@@ -106,7 +106,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
                       type="date" 
                       value={endDate} 
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="m3-input h-10 text-sm"
+                      className="m3-input h-12 text-sm"
                     />
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
                   <select 
                     value={selectedBean} 
                     onChange={(e) => setSelectedBean(e.target.value)}
-                    className="m3-input h-10 text-sm appearance-none"
+                    className="m3-input h-12 text-sm appearance-none"
                   >
                     <option value="">All Beans</option>
                     {Array.from(new Set(logs.map(l => l.beanName))).sort().map(name => (
