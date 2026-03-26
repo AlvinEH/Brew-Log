@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2, AlertCircle } from 'lucide-react';
+import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getRecommendedRecipes } from '../services/gemini';
+import { extractRecipeFromUrl } from '../services/gemini';
 import { Recipe } from '../types';
 import { db, auth, OperationType, handleFirestoreError } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
-export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApiKey }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[], geminiApiKey?: string }) {
-  const [recommendedRecipes, setRecommendedRecipes] = useState<Recipe[]>([]);
+export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[], geminiApiKey?: string }) {
+  const [importedRecipe, setImportedRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(false);
-  const [queryText, setQueryText] = useState('');
+  const [url, setUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRecipes = async () => {
+  const handleImport = async () => {
+    if (!url.trim()) {
+      setError("Please enter a valid URL.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setImportedRecipe(null);
     try {
       if (!geminiApiKey && !process.env.GEMINI_API_KEY) {
         setError("Gemini API key is missing. Please add it in Settings > Preferences.");
@@ -22,15 +28,15 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApi
         return;
       }
 
-      const data = await getRecommendedRecipes(queryText, geminiApiKey);
-      if (data && data.length > 0) {
-        setRecommendedRecipes(data);
+      const data = await extractRecipeFromUrl(url, geminiApiKey);
+      if (data) {
+        setImportedRecipe({ ...data, url });
       } else {
-        setError("No recipes found. Try a different search term.");
+        setError("Failed to extract recipe from the URL. Please try another link.");
       }
     } catch (err: any) {
-      console.error("Error fetching recipes:", err);
-      let message = "Failed to fetch recipes. Please try again.";
+      console.error("Error importing recipe:", err);
+      let message = "Failed to import recipe. Please try again.";
       if (err?.message?.includes("429") || err?.message?.includes("quota")) {
         message = "Gemini API rate limit exceeded (429). If you haven't set a personal API key in Settings, the shared key might be exhausted. Please try again later or add your own key.";
       } else if (err?.message?.includes("API_KEY_INVALID") || err?.message?.includes("invalid API key")) {
@@ -82,27 +88,27 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApi
       <div className="m3-card">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-primary-container rounded-2xl">
-            <Sparkles className="text-on-primary-container" size={24} />
+            <LinkIcon className="text-on-primary-container" size={24} />
           </div>
-          <h2 className="text-2xl font-semibold">Recipe Finder</h2>
+          <h2 className="text-2xl font-semibold">Recipe Importer</h2>
         </div>
 
         <div className="flex gap-2 min-w-0">
           <input 
-            type="text" 
-            placeholder="Search for a bean type or method..."
-            value={queryText}
-            onChange={(e) => setQueryText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchRecipes()}
+            type="url" 
+            placeholder="Paste a recipe URL (e.g., V60, Chemex)..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleImport()}
             className="m3-input flex-1"
           />
           <button 
-            onClick={fetchRecipes}
+            onClick={handleImport}
             disabled={loading}
             className="m3-button-primary shrink-0"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-            Find
+            {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+            Import
           </button>
         </div>
 
@@ -137,20 +143,17 @@ export default function RecipeRecommender({ onEdit, savedRecipes = [], geminiApi
         </div>
       )}
 
-      {recommendedRecipes.length > 0 && (
+      {importedRecipe && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 px-2">
             <Sparkles size={16} className="text-primary" />
-            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Recommended</h3>
+            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Imported Recipe</h3>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
-            {recommendedRecipes.map((recipe, idx) => (
-              <RecipeCard 
-                key={recipe.id || `${recipe.title}-${idx}`} 
-                recipe={{ ...recipe, isSaved: isRecipeSaved(recipe.title) }} 
-                onToggleSave={() => toggleSave(recipe)} 
-              />
-            ))}
+            <RecipeCard 
+              recipe={{ ...importedRecipe, isSaved: isRecipeSaved(importedRecipe.title) }} 
+              onToggleSave={() => toggleSave(importedRecipe)} 
+            />
           </div>
         </div>
       )}
@@ -213,14 +216,20 @@ const RecipeCard: React.FC<{
         {recipe.description}
       </p>
       
-      <div className="grid grid-cols-2 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         <div className="p-2 bg-secondary-container rounded-xl text-center">
           <p className="text-[10px] uppercase font-bold opacity-50">Coffee</p>
-          <p className="font-bold">{recipe.coffeeWeight}g</p>
+          <p className="font-bold truncate">{recipe.coffeeWeight}g</p>
         </div>
         <div className="p-2 bg-secondary-container rounded-xl text-center">
           <p className="text-[10px] uppercase font-bold opacity-50">Water</p>
-          <p className="font-bold">{recipe.waterWeight}g</p>
+          <p className="font-bold truncate">{recipe.waterWeight}g</p>
+        </div>
+        <div className="p-2 bg-secondary-container rounded-xl text-center">
+          <p className="text-[10px] uppercase font-bold opacity-50">Ratio</p>
+          <p className="font-bold truncate">
+            {recipe.ratio || (recipe.coffeeWeight > 0 ? `1:${(recipe.waterWeight / recipe.coffeeWeight).toFixed(1)}` : '-')}
+          </p>
         </div>
       </div>
 

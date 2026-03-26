@@ -126,3 +126,70 @@ export async function extractBeanInfoFromUrl(url: string, customKey?: string) {
     throw e; // Re-throw to be caught by the UI handler
   }
 }
+
+export async function extractRecipeFromUrl(url: string, customKey?: string) {
+  const ai = getAI(customKey);
+  const prompt = `Extract a pourover coffee recipe from this URL: ${url}. 
+  Provide the recipe title, source, a brief description, coffee weight (g), water weight (g), ratio, step-by-step instructions (steps), and specific timings for each step (timings) including the cumulative water weight to pour for each step (e.g., 50g, 150g).
+  If any information is missing, leave it as an empty string or empty array.`;
+
+  console.log("Extracting recipe from:", url);
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-flash-latest",
+      contents: prompt,
+      config: {
+        tools: [{ urlContext: {} }],
+        responseMimeType: "application/json",
+        maxOutputTokens: 4000,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            source: { type: Type.STRING },
+            description: { type: Type.STRING },
+            coffeeWeight: { type: Type.NUMBER },
+            waterWeight: { type: Type.NUMBER },
+            ratio: { type: Type.STRING },
+            steps: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            timings: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  step: { type: Type.STRING },
+                  time: { type: Type.STRING },
+                  waterWeight: { type: Type.STRING }
+                },
+                required: ["step", "time", "waterWeight"]
+              }
+            }
+          },
+          required: ["title", "source", "description", "coffeeWeight", "waterWeight", "ratio", "steps", "timings"]
+        }
+      }
+    });
+
+    console.log("Gemini response received:", response.text);
+
+    if (!response.text) {
+      console.warn("Gemini returned empty text for recipe extraction");
+      return null;
+    }
+
+    return JSON.parse(response.text);
+  } catch (e: any) {
+    console.error("Failed to extract or parse recipe:", e);
+    if (e?.message?.includes("429") || e?.message?.includes("quota")) {
+      throw new Error("Gemini API rate limit exceeded (429).");
+    }
+    if (e?.message?.includes("API_KEY_INVALID") || e?.message?.includes("invalid API key")) {
+      throw new Error("Invalid Gemini API key.");
+    }
+    throw e;
+  }
+}

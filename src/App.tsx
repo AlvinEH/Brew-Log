@@ -48,7 +48,7 @@ import { User } from 'firebase/auth';
 // Components
 import BrewLogList from './components/BrewLogList';
 import BrewLogForm from './components/BrewLogForm';
-import RecipeRecommender from './components/RecipeRecommender';
+import RecipeImporter from './components/RecipeImporter';
 import RecipeForm from './components/RecipeForm';
 import RatioCalculator from './components/RatioCalculator';
 import TemperatureConverter from './components/TemperatureConverter';
@@ -678,7 +678,7 @@ export default function App() {
                           <Plus size={18} /> Manual Add
                         </button>
                       </div>
-                      <RecipeRecommender 
+                      <RecipeImporter 
                         savedRecipes={recipes.filter(r => r.isSaved)}
                         geminiApiKey={settings.geminiApiKey}
                         onEdit={(recipe) => {
