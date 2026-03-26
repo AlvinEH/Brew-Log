@@ -16,7 +16,8 @@ import {
   Bean,
   Settings,
   User as UserIcon,
-  Hammer
+  Hammer,
+  ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, CoffeeBean, Grinder, Recipe, UserSettings, ColorScheme } from './types';
@@ -48,15 +49,14 @@ import { User } from 'firebase/auth';
 // Components
 import BrewLogList from './components/BrewLogList';
 import BrewLogForm from './components/BrewLogForm';
-import RecipeImporter from './components/RecipeImporter';
-import RecipeForm from './components/RecipeForm';
+import RecipeTab from './components/RecipeTab';
 import RatioCalculator from './components/RatioCalculator';
 import TemperatureConverter from './components/TemperatureConverter';
 import CoffeeBeanTab from './components/CoffeeBeanTab';
 import GrinderTab from './components/GrinderTab';
 import FloatingActionButton from './components/FloatingActionButton';
 
-type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'grinders' | 'settings' | 'new-bean' | 'new-grinder';
+type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'grinders' | 'settings' | 'new-bean' | 'new-grinder' | 'new-recipe';
 type SettingsSubTab = 'ratio' | 'temp' | 'preferences' | 'account';
 
 export default function App() {
@@ -73,8 +73,8 @@ export default function App() {
   const [previousTab, setPreviousTab] = useState<Tab>('history');
 
   const navigateToTab = (newTab: Tab) => {
-    const isNewTab = ['new', 'new-bean', 'new-grinder'].includes(newTab);
-    const isCurrentTabNew = ['new', 'new-bean', 'new-grinder'].includes(activeTab);
+    const isNewTab = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(newTab);
+    const isCurrentTabNew = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(activeTab);
 
     if (isNewTab && !isCurrentTabNew) {
       setPreviousTab(activeTab);
@@ -97,12 +97,10 @@ export default function App() {
   const [editingBean, setEditingBean] = useState<CoffeeBean | null>(null);
   const [editingGrinder, setEditingGrinder] = useState<Grinder | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
-  const [showRecipeForm, setShowRecipeForm] = useState(false);
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
 
   useEffect(() => {
-    if (activeTab !== 'recipes') {
-      setShowRecipeForm(false);
+    if (activeTab !== 'recipes' && activeTab !== 'new-recipe') {
       setEditingRecipe(null);
     }
     if (activeTab !== 'new') setEditingLog(null);
@@ -443,6 +441,14 @@ export default function App() {
     }
   };
 
+  const deleteRecipe = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'recipes', id));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `recipes/${id}`);
+    }
+  };
+
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user) return;
     try {
@@ -481,7 +487,7 @@ export default function App() {
           <div className="w-24 h-24 bg-primary-container rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
             <Coffee className="text-on-primary-container" size={48} />
           </div>
-          <h1 className="text-4xl font-bold mb-4 tracking-tight">BrewLog</h1>
+          <h1 className="text-4xl font-bold mb-4 tracking-tight">Brewing</h1>
           <p className="text-lg opacity-70 mb-10">Track your daily pourover journey with precision and style.</p>
           
           <button 
@@ -509,7 +515,6 @@ export default function App() {
           createdAt: new Date().toISOString()
         });
       }
-      setShowRecipeForm(false);
       setEditingRecipe(null);
     } catch (err) {
       handleFirestoreError(err, recipe.id ? OperationType.UPDATE : OperationType.CREATE, 'recipes');
@@ -528,8 +533,7 @@ export default function App() {
       steps: logData.timings?.map(t => t.step) || []
     };
     setEditingRecipe(recipeData);
-    setShowRecipeForm(true);
-    navigateToTab('recipes');
+    navigateToTab('new-recipe');
   };
 
   return (
@@ -538,7 +542,7 @@ export default function App() {
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-black/5 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Coffee className="text-primary" size={28} />
-          <span className="text-2xl font-bold tracking-tight">BrewLog</span>
+          <span className="text-2xl font-bold tracking-tight">Brewing</span>
         </div>
         
         <div className="flex items-center gap-4">
@@ -641,55 +645,33 @@ export default function App() {
                 editingGrinder={editingGrinder}
               />
             )}
+            {activeTab === 'new-recipe' && (
+              <RecipeTab 
+                recipes={recipes}
+                onSave={handleSaveRecipe}
+                onDelete={deleteRecipe}
+                userId={user.uid}
+                initialShowForm={true}
+                onFormClose={() => {
+                  setEditingRecipe(null);
+                  setActiveTab(previousTab);
+                }}
+                editingRecipe={editingRecipe}
+                settings={settings}
+              />
+            )}
             {activeTab === 'recipes' && (
-              <div className="space-y-6">
-                <AnimatePresence mode="wait" initial={false}>
-                  {showRecipeForm ? (
-                    <motion.div
-                      key="recipe-form"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                    >
-                      <RecipeForm 
-                        onSave={handleSaveRecipe}
-                        onCancel={() => {
-                          setShowRecipeForm(false);
-                          setEditingRecipe(null);
-                        }}
-                        initialData={editingRecipe}
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="recipe-list"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <div className="flex justify-end mb-4">
-                        <button 
-                          onClick={() => {
-                            setEditingRecipe(null);
-                            setShowRecipeForm(true);
-                          }}
-                          className="m3-button-tonal py-2 px-4 text-sm"
-                        >
-                          <Plus size={18} /> Manual Add
-                        </button>
-                      </div>
-                      <RecipeImporter 
-                        savedRecipes={recipes.filter(r => r.isSaved)}
-                        geminiApiKey={settings.geminiApiKey}
-                        onEdit={(recipe) => {
-                          setEditingRecipe(recipe);
-                          setShowRecipeForm(true);
-                        }} 
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <RecipeTab 
+                recipes={recipes}
+                onSave={handleSaveRecipe}
+                onDelete={deleteRecipe}
+                userId={user.uid}
+                onEdit={(recipe) => {
+                  setEditingRecipe(recipe);
+                  navigateToTab('new-recipe');
+                }}
+                settings={settings}
+              />
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">
@@ -846,9 +828,9 @@ export default function App() {
       <FloatingActionButton 
         visible={
           activeTab !== 'new' && 
-          activeTab !== 'new-bean' &&
-          activeTab !== 'new-grinder' &&
-          activeTab !== 'recipes' && 
+          activeTab !== 'new-bean' && 
+          activeTab !== 'new-grinder' && 
+          activeTab !== 'new-recipe' && 
           activeTab !== 'settings'
         }
         onAddBrew={() => navigateToTab('new')}
@@ -859,6 +841,9 @@ export default function App() {
         onAddGrinder={() => {
           setEditingGrinder(null);
           navigateToTab('new-grinder');
+        }}
+        onAddRecipe={() => {
+          navigateToTab('new-recipe');
         }}
       />
 

@@ -65,7 +65,10 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
       setWaterTemp('');
       setNotes('');
       setRating(3);
-      setTimings([]);
+      setTimings([
+        { step: 'Bloom', time: '' },
+        { step: 'First Pour', time: '' }
+      ]);
     }
   }, [initialData, defaultGrinderId, savedGrinders]);
 
@@ -93,8 +96,22 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
     setShowRecipeSelector(false);
   };
 
+  const getOrdinal = (n: number) => {
+    const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+    return ordinals[n - 1] || `${n}th`;
+  };
+
   const addTiming = () => {
-    setTimings([...timings, { step: '', time: '' }]);
+    const nextIdx = timings.length;
+    let defaultStep = '';
+    
+    if (nextIdx === 0) {
+      defaultStep = 'Bloom';
+    } else {
+      defaultStep = `${getOrdinal(nextIdx)} Pour`;
+    }
+    
+    setTimings([...timings, { step: defaultStep, time: '' }]);
   };
 
   const updateTiming = (idx: number, field: keyof BrewTiming, val: string) => {

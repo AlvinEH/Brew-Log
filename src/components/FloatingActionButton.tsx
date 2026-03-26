@@ -1,15 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Coffee, Bean, Hammer } from 'lucide-react';
+import { Plus, Coffee, Bean, Hammer, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface Props {
   onAddBrew: () => void;
   onAddBean: () => void;
   onAddGrinder: () => void;
+  onAddRecipe: () => void;
   visible?: boolean;
 }
 
-export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinder, visible = true }: Props) {
+export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinder, onAddRecipe, visible = true }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +89,22 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
                     </span>
                     <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
                       <Hammer size={24} />
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                    transition={{ delay: 0.15 }}
+                    onClick={() => handleAction(onAddRecipe)}
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="bg-surface-variant text-on-surface-variant px-3 py-1.5 rounded-xl text-sm font-bold shadow-lg transition-opacity">
+                      New Recipe
+                    </span>
+                    <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
+                      <Sparkles size={24} />
                     </div>
                   </motion.button>
                 </div>

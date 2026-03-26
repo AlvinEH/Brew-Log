@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2, AlertCircle, Link as LinkIcon } from 'lucide-react';
+import { Sparkles, Search, Loader2, ExternalLink, Bookmark, BookmarkX, ChevronDown, ChevronUp, Edit2, AlertCircle, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractRecipeFromUrl } from '../services/gemini';
 import { Recipe } from '../types';
 import { db, auth, OperationType, handleFirestoreError } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
-export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[], geminiApiKey?: string }) {
+export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey, onClose, onManualAdd }: { onEdit?: (recipe: Recipe) => void, savedRecipes?: Recipe[], geminiApiKey?: string, onClose?: () => void, onManualAdd?: () => void }) {
   const [importedRecipe, setImportedRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState('');
@@ -85,12 +85,16 @@ export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey
 
   return (
     <div className="space-y-8">
-      <div className="m3-card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-primary-container rounded-2xl">
-            <LinkIcon className="text-on-primary-container" size={24} />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm opacity-60">Extract details from a URL</p>
           </div>
-          <h2 className="text-2xl font-semibold">Recipe Importer</h2>
+          {onClose && (
+            <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full">
+              <X size={24} />
+            </button>
+          )}
         </div>
 
         <div className="flex gap-2 min-w-0">
@@ -107,10 +111,21 @@ export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey
             disabled={loading}
             className="m3-button-primary shrink-0"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : <Globe size={20} />}
             Import
           </button>
         </div>
+
+        {onManualAdd && (
+          <div className="flex justify-center mt-4">
+            <button 
+              onClick={onManualAdd}
+              className="text-xs font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity"
+            >
+              Or Add Manually
+            </button>
+          </div>
+        )}
 
         {error && (
           <motion.div 
@@ -123,25 +138,6 @@ export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey
           </motion.div>
         )}
       </div>
-
-      {savedRecipes.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-2">
-            <Bookmark size={16} className="text-primary" />
-            <h3 className="text-sm font-bold uppercase tracking-widest opacity-60">Saved Recipes</h3>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
-            {savedRecipes.map((recipe) => (
-              <RecipeCard 
-                key={recipe.id} 
-                recipe={recipe} 
-                onToggleSave={() => toggleSave(recipe)} 
-                onEdit={onEdit ? () => onEdit(recipe) : undefined}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       {importedRecipe && (
         <div className="space-y-4">
@@ -161,7 +157,7 @@ export default function RecipeImporter({ onEdit, savedRecipes = [], geminiApiKey
   );
 }
 
-const RecipeCard: React.FC<{ 
+export const RecipeCard: React.FC<{ 
   recipe: Recipe; 
   onToggleSave: () => void | Promise<void>;
   onEdit?: () => void;

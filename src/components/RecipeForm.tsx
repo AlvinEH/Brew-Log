@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Save, X, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Sparkles, X, Loader2, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Recipe, BrewTiming } from '../types';
 
@@ -27,8 +27,22 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
     }
   }, [coffeeWeight, waterWeight]);
 
+  const getOrdinal = (n: number) => {
+    const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+    return ordinals[n - 1] || `${n}th`;
+  };
+
   const addTiming = () => {
-    setTimings([...timings, { step: '', time: '', waterWeight: '' }]);
+    const nextIdx = timings.length;
+    let defaultStep = '';
+    
+    if (nextIdx === 0) {
+      defaultStep = 'Bloom';
+    } else {
+      defaultStep = `${getOrdinal(nextIdx)} Pour`;
+    }
+    
+    setTimings([...timings, { step: defaultStep, time: '', waterWeight: '' }]);
   };
 
   const updateTiming = (idx: number, field: keyof BrewTiming, val: string) => {
@@ -80,86 +94,86 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
   };
 
   return (
-    <div className="m3-card max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-primary-container rounded-2xl">
-            <Sparkles className="text-on-primary-container" size={24} />
-          </div>
-          <h2 className="text-2xl font-semibold">{initialData?.id ? 'Edit Recipe' : 'Create Recipe'}</h2>
-        </div>
-        <button onClick={onCancel} className="p-2 hover:bg-black/5 rounded-full">
-          <X size={24} />
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Recipe Title*</label>
-            <input required value={title} onChange={e => setTitle(e.target.value)} className="m3-input" placeholder="e.g. Morning V60" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Source</label>
-            <input value={source} onChange={e => setSource(e.target.value)} className="m3-input" placeholder="e.g. James Hoffmann" />
+    <div className="max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-10">
+        <div className="pb-8 border-b border-black/5">
+          <h3 className="text-xl font-bold mb-6">Basic Info</h3>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Recipe Title*</label>
+              <input required value={title} onChange={e => setTitle(e.target.value)} className="m3-input" placeholder="e.g. Morning V60" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Source</label>
+              <input value={source} onChange={e => setSource(e.target.value)} className="m3-input" placeholder="e.g. James Hoffmann" />
+            </div>
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Description</label>
+        <div className="pb-8 border-b border-black/5">
+          <h3 className="text-xl font-bold mb-6">Description</h3>
           <textarea value={description} onChange={e => setDescription(e.target.value)} className="m3-input min-h-[80px]" placeholder="Brief notes about this recipe..." />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Coffee (g)</label>
-            <input type="number" step="0.1" value={coffeeWeight} onChange={e => setCoffeeWeight(e.target.value)} className="m3-input" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Water (g)</label>
-            <input type="number" step="1" value={waterWeight} onChange={e => setWaterWeight(e.target.value)} className="m3-input" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Ratio</label>
-            <input disabled value={ratio} className="m3-input bg-surface-variant/30" />
+        <div className="pb-8 border-b border-black/5">
+          <h3 className="text-xl font-bold mb-6">Ratio & Weights</h3>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Coffee (g)</label>
+              <input type="number" step="0.1" value={coffeeWeight} onChange={e => setCoffeeWeight(e.target.value)} className="m3-input" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Water (g)</label>
+              <input type="number" step="1" value={waterWeight} onChange={e => setWaterWeight(e.target.value)} className="m3-input" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Ratio</label>
+              <input disabled value={ratio} className="m3-input bg-surface-variant/30" />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 ml-1">Brew Steps & Timings</label>
+        <div className="pb-8 border-b border-black/5">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold">Brew Steps & Timings</h3>
             <button type="button" onClick={addTiming} className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-1">
               <Plus size={14} /> Add Step
             </button>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             {timings.map((t, idx) => (
-              <div key={idx} className="flex gap-2 items-start">
-                <div className="flex-1 space-y-2">
+              <div key={idx} className="flex gap-4 items-start p-4 bg-surface-variant/20 rounded-2xl">
+                <div className="flex-1 space-y-4">
                   <input 
                     placeholder="Step description" 
                     value={t.step} 
                     onChange={e => updateTiming(idx, 'step', e.target.value)}
-                    className="m3-input h-10 text-sm"
+                    className="m3-input text-sm"
                   />
-                  <div className="flex gap-2">
-                    <input 
-                      placeholder="Time" 
-                      value={t.time} 
-                      onChange={e => updateTiming(idx, 'time', e.target.value)}
-                      className="m3-input h-10 text-sm flex-1"
-                    />
-                    <input 
-                      placeholder="Water (g)" 
-                      value={t.waterWeight || ''} 
-                      onChange={e => updateTiming(idx, 'waterWeight', e.target.value)}
-                      className="m3-input h-10 text-sm flex-1"
-                    />
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-bold uppercase opacity-50 mb-1 ml-1">Time</label>
+                      <input 
+                        placeholder="e.g. 0:30" 
+                        value={t.time} 
+                        onChange={e => updateTiming(idx, 'time', e.target.value)}
+                        className="m3-input text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-bold uppercase opacity-50 mb-1 ml-1">Water (g)</label>
+                      <input 
+                        placeholder="e.g. 50g" 
+                        value={t.waterWeight || ''} 
+                        onChange={e => updateTiming(idx, 'waterWeight', e.target.value)}
+                        className="m3-input text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
-                <button type="button" onClick={() => removeTiming(idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-full mt-1">
-                  <Trash2 size={18} />
+                <button type="button" onClick={() => removeTiming(idx)} className="p-2 text-destructive hover:bg-destructive/10 rounded-full mt-1">
+                  <Trash2 size={20} />
                 </button>
               </div>
             ))}
@@ -167,9 +181,9 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
         </div>
 
         <div className="flex gap-4 pt-4">
-          <button type="button" onClick={onCancel} className="m3-button-outlined flex-1 py-3 justify-center">Cancel</button>
-          <button type="submit" disabled={saving} className="m3-button-primary flex-1 py-3 justify-center">
-            {saving ? <Loader2 className="animate-spin" size={20} /> : <><Save size={20} /> Save Recipe</>}
+          <button type="button" onClick={onCancel} className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center">Cancel</button>
+          <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-4 text-lg shadow-lg justify-center">
+            {saving ? <Loader2 className="animate-spin" size={24} /> : (initialData?.id ? 'Update Recipe' : 'Save Recipe')}
           </button>
         </div>
       </form>
