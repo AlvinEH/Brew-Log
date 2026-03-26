@@ -16,7 +16,16 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
   const [coffeeWeight, setCoffeeWeight] = useState(initialData?.coffeeWeight?.toString() || '15');
   const [waterWeight, setWaterWeight] = useState(initialData?.waterWeight?.toString() || '225');
   const [ratio, setRatio] = useState(initialData?.ratio || '1:15');
-  const [timings, setTimings] = useState<BrewTiming[]>(initialData?.timings || []);
+  const [timings, setTimings] = useState<BrewTiming[]>(() => {
+    if (initialData?.timings && initialData.timings.length > 0) return initialData.timings;
+    if (initialData?.steps && initialData.steps.length > 0) {
+      return initialData.steps.map(step => ({ step, time: '', waterWeight: '' }));
+    }
+    return [
+      { step: 'Bloom', time: '', waterWeight: '' },
+      { step: 'First Pour', time: '', waterWeight: '' }
+    ];
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
