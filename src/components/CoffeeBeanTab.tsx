@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit2, Archive, RotateCcw, Calendar } from 'lucide-react';
+import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit2, Archive, RotateCcw, Calendar, Clock, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractBeanInfoFromUrl } from '../services/gemini';
 import { CoffeeBean, BrewLog, UserSettings } from '../types';
@@ -24,6 +24,10 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(editingBean?.id || null);
   const [activeTab, setActiveTab] = useState<'stock' | 'archived'>('stock');
+  const [selectedRoaster, setSelectedRoaster] = useState<string>('All Roasters');
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const roasters = ['All Roasters', ...Array.from(new Set(beans.map(b => b.roaster))).sort()];
 
   React.useEffect(() => {
     if (initialShowForm) {
@@ -61,50 +65,73 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
   const handleImport = async () => {
     if (!url) return;
     setImporting(true);
-    const info = await extractBeanInfoFromUrl(url, settings.geminiApiKey);
-    if (info) {
-      setName(info.name || '');
-      setRoaster(info.roaster || '');
-      setRoastDate(info.roastDate || '');
-      
-      // Format price and weight from import
-      let importedPrice = info.price || '';
-      if (importedPrice && !importedPrice.startsWith('$')) {
-        importedPrice = `$${importedPrice}`;
+    setImportError(null);
+    
+    try {
+      if (!settings.geminiApiKey && !process.env.GEMINI_API_KEY) {
+        setImportError("Gemini API key is missing. Please add it in Settings > Preferences.");
+        setImporting(false);
+        return;
       }
-      setPrice(importedPrice);
 
-      let importedWeight = info.weight || '';
-      if (importedWeight) {
-        const lowerWeight = importedWeight.toLowerCase();
-        // If it already has oz, we trust the AI's extraction (which is now instructed to only get oz)
-        if (lowerWeight.includes('oz')) {
-          // Just ensure it's a clean oz string if there's extra text
-          const numericMatch = importedWeight.match(/(\d+(\.\d+)?)\s*oz/i);
-          if (numericMatch) {
-            importedWeight = numericMatch[1] + 'oz';
-          }
-        } else {
-          const numericValue = parseFloat(importedWeight.replace(/[^0-9.]/g, ''));
-          if (!isNaN(numericValue)) {
-            if (lowerWeight.includes('kg')) {
-              importedWeight = (numericValue * 35.274).toFixed(1) + 'oz';
-            } else if (lowerWeight.includes('g')) {
-              importedWeight = (numericValue * 0.035274).toFixed(1) + 'oz';
-            } else if (lowerWeight.includes('lb')) {
-              importedWeight = (numericValue * 16).toFixed(1) + 'oz';
-            } else {
-              importedWeight = numericValue + 'oz';
+      const info = await extractBeanInfoFromUrl(url, settings.geminiApiKey);
+      
+      if (info && (info.name || info.roaster)) {
+        setName(info.name || '');
+        setRoaster(info.roaster || '');
+        setRoastDate(info.roastDate || '');
+        
+        // Format price and weight from import
+        let importedPrice = info.price || '';
+        if (importedPrice && !importedPrice.startsWith('$')) {
+          importedPrice = `$${importedPrice}`;
+        }
+        setPrice(importedPrice);
+
+        let importedWeight = info.weight || '';
+        if (importedWeight) {
+          const lowerWeight = importedWeight.toLowerCase();
+          // If it already has oz, we trust the AI's extraction (which is now instructed to only get oz)
+          if (lowerWeight.includes('oz')) {
+            // Just ensure it's a clean oz string if there's extra text
+            const numericMatch = importedWeight.match(/(\d+(\.\d+)?)\s*oz/i);
+            if (numericMatch) {
+              importedWeight = numericMatch[1] + 'oz';
+            }
+          } else {
+            const numericValue = parseFloat(importedWeight.replace(/[^0-9.]/g, ''));
+            if (!isNaN(numericValue)) {
+              if (lowerWeight.includes('kg')) {
+                importedWeight = (numericValue * 35.274).toFixed(1) + 'oz';
+              } else if (lowerWeight.includes('g')) {
+                importedWeight = (numericValue * 0.035274).toFixed(1) + 'oz';
+              } else if (lowerWeight.includes('lb')) {
+                importedWeight = (numericValue * 16).toFixed(1) + 'oz';
+              } else {
+                importedWeight = numericValue + 'oz';
+              }
             }
           }
         }
+        setWeight(importedWeight.replace(/\s*oz$/i, ''));
+        
+        setFlavorProfile(info.flavorProfile || []);
+        setShowForm(true);
+      } else {
+        setImportError("Could not extract bean details. The site might be blocking access or the URL is invalid.");
       }
-      setWeight(importedWeight.replace(/\s*oz$/i, ''));
-      
-      setFlavorProfile(info.flavorProfile || []);
-      setShowForm(true);
+    } catch (err: any) {
+      console.error("Import error:", err);
+      let message = "Failed to import bean details.";
+      if (err?.message?.includes("API_KEY_INVALID") || err?.message?.includes("invalid API key")) {
+        message = "Invalid Gemini API key. Please check your settings.";
+      } else if (err?.message?.includes("quota")) {
+        message = "Gemini API quota exceeded. Please try again later.";
+      }
+      setImportError(message);
+    } finally {
+      setImporting(false);
     }
-    setImporting(false);
   };
 
   const startEdit = (bean: CoffeeBean) => {
@@ -211,9 +238,24 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
     onFormClose?.();
   };
 
-  const filteredBeans = beans.filter(bean => 
-    activeTab === 'stock' ? !bean.isArchived : bean.isArchived
-  );
+  const getDaysSinceRoast = (roastDate?: string) => {
+    if (!roastDate) return null;
+    const roast = new Date(roastDate);
+    if (isNaN(roast.getTime())) return null;
+    const now = new Date();
+    // Reset time to midnight for accurate day calculation
+    const roastMidnight = new Date(roast.getFullYear(), roast.getMonth(), roast.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = nowMidnight.getTime() - roastMidnight.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const filteredBeans = beans.filter(bean => {
+    const matchesTab = activeTab === 'stock' ? !bean.isArchived : bean.isArchived;
+    const matchesRoaster = selectedRoaster === 'All Roasters' || bean.roaster === selectedRoaster;
+    return matchesTab && matchesRoaster;
+  });
 
   const getRemainingWeight = (bean: CoffeeBean) => {
     const numericWeight = parseFloat(bean.weight?.replace(/[^0-9.]/g, '') || '0');
@@ -280,6 +322,24 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
               Archive
             </button>
           </div>
+
+          {/* Roaster Filter */}
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-md">
+              <select 
+                value={selectedRoaster}
+                onChange={(e) => setSelectedRoaster(e.target.value)}
+                className="m3-input h-10 text-sm font-bold appearance-none bg-surface-variant/30 border-none rounded-xl px-4 pr-10 hover:bg-surface-variant/50 transition-colors cursor-pointer"
+              >
+                {roasters.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                <Tag size={14} />
+              </div>
+            </div>
+          </div>
         </>
       )}
 
@@ -319,6 +379,16 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                     Import
                   </button>
                 </div>
+                {importError && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="flex items-center gap-2 text-destructive text-xs font-bold mt-2 bg-destructive/10 p-3 rounded-xl border border-destructive/20"
+                  >
+                    <AlertCircle size={14} className="shrink-0" />
+                    <span>{importError}</span>
+                  </motion.div>
+                )}
               </div>
             </div>
 
@@ -516,9 +586,20 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {bean.roastDate && !isNaN(new Date(bean.roastDate).getTime()) && (
-                      <div className="flex items-center gap-1 text-xs bg-secondary-container px-2 py-1 rounded-lg">
-                        <Calendar size={12} /> Roasted: {new Date(bean.roastDate).toLocaleDateString()}
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1 text-xs bg-secondary-container px-2 py-1 rounded-lg">
+                          <Calendar size={12} /> Roasted: {new Date(bean.roastDate).toLocaleDateString()}
+                        </div>
+                        {(() => {
+                          const days = getDaysSinceRoast(bean.roastDate);
+                          if (days === null) return null;
+                          return (
+                            <div className="flex items-center gap-1 text-xs bg-secondary-container px-2 py-1 rounded-lg">
+                              <Clock size={12} /> {days} days
+                            </div>
+                          );
+                        })()}
+                      </>
                     )}
                     {bean.price && (
                       <div className="flex items-center gap-1 text-xs bg-secondary-container px-2 py-1 rounded-lg">

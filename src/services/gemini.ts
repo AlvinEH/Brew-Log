@@ -69,39 +69,48 @@ export async function extractBeanInfoFromUrl(url: string, customKey?: string) {
   For the weight/bag size, ONLY retrieve the value in ounces (oz). For example, if the page says "16oz (1lb)", return "16oz".
   If any information is missing, leave it as an empty string or empty array.`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      tools: [{ urlContext: {} }],
-      responseMimeType: "application/json",
-      maxOutputTokens: 2000,
-      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING },
-          roaster: { type: Type.STRING },
-          roastDate: { type: Type.STRING },
-          price: { type: Type.STRING },
-          weight: { 
-            type: Type.STRING,
-            description: "The weight of the coffee bag, specifically in ounces (e.g., '12oz', '16oz')."
-          },
-          flavorProfile: { 
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
-          }
-        },
-        required: ["name", "roaster", "price", "weight", "flavorProfile"]
-      }
-    }
-  });
+  console.log("Extracting bean info from:", url);
 
   try {
-    return JSON.parse(response.text || "{}");
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        tools: [{ urlContext: {} }],
+        responseMimeType: "application/json",
+        maxOutputTokens: 2000,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING },
+            roaster: { type: Type.STRING },
+            roastDate: { type: Type.STRING },
+            price: { type: Type.STRING },
+            weight: { 
+              type: Type.STRING,
+              description: "The weight of the coffee bag, specifically in ounces (e.g., '12oz', '16oz')."
+            },
+            flavorProfile: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
+          },
+          required: ["name", "roaster", "price", "weight", "flavorProfile"]
+        }
+      }
+    });
+
+    console.log("Gemini response received:", response.text);
+
+    if (!response.text) {
+      console.warn("Gemini returned empty text for URL extraction");
+      return null;
+    }
+
+    return JSON.parse(response.text);
   } catch (e) {
-    console.error("Failed to parse bean info:", e);
-    return null;
+    console.error("Failed to extract or parse bean info:", e);
+    throw e; // Re-throw to be caught by the UI handler
   }
 }
