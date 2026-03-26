@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 function getAI(customKey?: string) {
   const apiKey = customKey || process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || "";
@@ -12,13 +12,12 @@ export async function getRecommendedRecipes(coffeeType?: string, customKey?: str
     : "Recommend 3 popular pourover coffee recipes (e.g., V60, Chemex, Kalita Wave). Include source, description, coffee weight (g), water weight (g), ratio, step-by-step instructions, specific timings for each step (e.g., 0:45, 1:30), and the cumulative water weight to pour for each step (e.g., 50g, 150g).";
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-flash-latest",
     contents: prompt,
     config: {
       tools: [{ googleSearch: {} }],
       responseMimeType: "application/json",
       maxOutputTokens: 4000,
-      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       responseSchema: {
         type: Type.ARRAY,
         items: {
@@ -73,13 +72,12 @@ export async function extractBeanInfoFromUrl(url: string, customKey?: string) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-flash-latest",
       contents: prompt,
       config: {
         tools: [{ urlContext: {} }],
         responseMimeType: "application/json",
         maxOutputTokens: 2000,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseSchema: {
           type: Type.OBJECT,
           properties: {
