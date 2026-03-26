@@ -38,8 +38,12 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
             )}
           </AnimatePresence>
 
-          <div 
+          <motion.div 
             ref={fabRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
             className="fixed bottom-24 right-6 z-[70] flex flex-col items-end gap-4"
           >
             <AnimatePresence initial={false}>
@@ -119,7 +123,7 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
             >
               <Plus size={32} />
             </button>
-          </div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

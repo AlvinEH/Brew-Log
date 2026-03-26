@@ -152,7 +152,18 @@ export default function GrinderTab({ grinders, onSave, onDelete, userId, initial
       </AnimatePresence>
 
       {!showForm && (
-        <motion.div layout className="grid gap-4 md:grid-cols-2 overflow-hidden">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2 mb-2">
+            <div className="flex items-center gap-2">
+              <Hammer size={20} className="text-primary" />
+              <h2 className="text-xl font-bold">Grinders</h2>
+              <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
+                {grinders.length}
+              </span>
+            </div>
+          </div>
+
+          <motion.div layout className="grid gap-4 md:grid-cols-2 overflow-hidden">
           <AnimatePresence mode="popLayout" initial={false}>
             {grinders.map((grinder) => (
               <motion.div 
@@ -211,7 +222,8 @@ export default function GrinderTab({ grinders, onSave, onDelete, userId, initial
             </div>
           )}
         </motion.div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 }

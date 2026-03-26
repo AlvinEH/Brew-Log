@@ -98,6 +98,30 @@ export default function App() {
   const [editingGrinder, setEditingGrinder] = useState<Grinder | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Only hide on mobile/small screens
+      if (window.innerWidth < 768) {
+        if (currentScrollY > lastScrollY && currentScrollY > 80) {
+          setIsNavVisible(false);
+        } else {
+          setIsNavVisible(true);
+        }
+      } else {
+        setIsNavVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   useEffect(() => {
     if (activeTab !== 'recipes' && activeTab !== 'new-recipe') {
@@ -827,6 +851,7 @@ export default function App() {
       {/* Floating Action Button */}
       <FloatingActionButton 
         visible={
+          isNavVisible &&
           activeTab !== 'new' && 
           activeTab !== 'new-bean' && 
           activeTab !== 'new-grinder' && 
@@ -848,7 +873,12 @@ export default function App() {
       />
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-black/5 px-4 py-3 flex justify-around items-center shadow-2xl z-50 select-none">
+      <motion.nav 
+        initial={false}
+        animate={{ y: isNavVisible ? 0 : '100%' }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-black/5 px-4 py-3 flex justify-around items-center shadow-2xl z-50 select-none"
+      >
         <NavButton 
           active={activeTab === 'history'} 
           onClick={() => navigateToTab('history')}
@@ -879,7 +909,7 @@ export default function App() {
           icon={<Settings size={24} />}
           label="Settings"
         />
-      </nav>
+      </motion.nav>
 
       {/* Error Toast */}
       <AnimatePresence initial={false}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit2, Archive, RotateCcw, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit2, Archive, RotateCcw, Calendar, Clock, AlertCircle, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractBeanInfoFromUrl } from '../services/gemini';
 import { CoffeeBean, BrewLog, UserSettings } from '../types';
@@ -25,6 +25,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
   const [editingId, setEditingId] = useState<string | null>(editingBean?.id || null);
   const [activeTab, setActiveTab] = useState<'stock' | 'archived'>('stock');
   const [selectedRoaster, setSelectedRoaster] = useState<string>('All Roasters');
+  const [showFilters, setShowFilters] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 
   const roasters = ['All Roasters', ...Array.from(new Set(beans.map(b => b.roaster))).sort()];
@@ -238,10 +239,18 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
     onFormClose?.();
   };
 
+  const parseLocalDate = (dateStr: string) => {
+    if (!dateStr) return null;
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return new Date(dateStr);
+    const [year, month, day] = parts.map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const getDaysSinceRoast = (roastDate?: string) => {
     if (!roastDate) return null;
-    const roast = new Date(roastDate);
-    if (isNaN(roast.getTime())) return null;
+    const roast = parseLocalDate(roastDate);
+    if (!roast || isNaN(roast.getTime())) return null;
     const now = new Date();
     // Reset time to midnight for accurate day calculation
     const roastMidnight = new Date(roast.getFullYear(), roast.getMonth(), roast.getDate());
@@ -307,6 +316,62 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
     <div className="space-y-6">
       {!showForm && (
         <>
+          <div className="flex items-center justify-between px-2 mb-2">
+            <div className="flex items-center gap-2">
+              <Bean size={20} className="text-primary" />
+              <h2 className="text-xl font-bold">Coffee Beans</h2>
+              <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
+                {beans.length}
+              </span>
+            </div>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2 rounded-xl transition-all ${showFilters || selectedRoaster !== 'All Roasters' ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+            >
+              <Filter size={20} />
+            </button>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {showFilters && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mb-4"
+              >
+                <div className="m3-card bg-surface-variant/20 border-none space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">Roaster</label>
+                    <div className="relative">
+                      <select 
+                        value={selectedRoaster}
+                        onChange={(e) => setSelectedRoaster(e.target.value)}
+                        className="m3-input h-12 text-sm appearance-none pr-10"
+                      >
+                        {roasters.map(r => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                        <Tag size={14} />
+                      </div>
+                    </div>
+                  </div>
+                  {selectedRoaster !== 'All Roasters' && (
+                    <button 
+                      onClick={() => setSelectedRoaster('All Roasters')}
+                      className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity pt-2"
+                    >
+                      <X size={14} />
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Tabs */}
           <div className="flex gap-2 p-1 bg-surface-variant rounded-2xl max-w-md mx-auto w-full">
             <button 
@@ -321,24 +386,6 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
             >
               Archive
             </button>
-          </div>
-
-          {/* Roaster Filter */}
-          <div className="flex justify-center">
-            <div className="relative w-full max-w-md">
-              <select 
-                value={selectedRoaster}
-                onChange={(e) => setSelectedRoaster(e.target.value)}
-                className="m3-input h-12 text-sm font-bold appearance-none bg-surface-variant/30 border-none rounded-xl px-4 pr-10 hover:bg-surface-variant/50 transition-colors cursor-pointer"
-              >
-                {roasters.map(r => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                <Tag size={14} />
-              </div>
-            </div>
           </div>
         </>
       )}
@@ -585,10 +632,13 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
                   )}
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {bean.roastDate && !isNaN(new Date(bean.roastDate).getTime()) && (
+                    {bean.roastDate && (
                       <>
                         <div className="flex items-center gap-1 text-xs bg-secondary-container px-2 py-1 rounded-lg">
-                          <Calendar size={12} /> Roasted: {new Date(bean.roastDate).toLocaleDateString()}
+                          <Calendar size={12} /> Roasted: {(() => {
+                            const d = parseLocalDate(bean.roastDate);
+                            return d && !isNaN(d.getTime()) ? d.toLocaleDateString() : bean.roastDate;
+                          })()}
                         </div>
                         {(() => {
                           const days = getDaysSinceRoast(bean.roastDate);
