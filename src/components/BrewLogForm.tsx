@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Save, Plus, Trash2, ChevronDown, Loader2, Sparkles } from 'lucide-react';
+import { Coffee, Save, Plus, Trash2, ChevronDown, Loader2, Sparkles, Timer, Play, Pause, RotateCcw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, BrewTiming, CoffeeBean, Grinder, Recipe } from '../types';
 import { Timestamp } from 'firebase/firestore';
@@ -40,6 +40,10 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
   const [showGrinderSelector, setShowGrinderSelector] = useState(false);
   const [showRecipeSelector, setShowRecipeSelector] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [timerTime, setTimerTime] = useState(0); // Time in seconds
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -174,6 +178,60 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
       }
     }
   };
+
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startTimer = () => {
+    setIsTimerRunning(true);
+    const interval = setInterval(() => {
+      setTimerTime(prev => prev + 1);
+    }, 1000);
+    setTimerInterval(interval);
+  };
+
+  const pauseTimer = () => {
+    setIsTimerRunning(false);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    setTimerTime(0);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+  };
+
+  const closeTimer = () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    setIsTimerRunning(false);
+    setShowTimer(false);
+  };
+
+  // Cleanup effect for timer
+  useEffect(() => {
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [timerInterval]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -466,9 +524,19 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
       <div className="pb-8 border-b border-black/5">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Brew Timings</h3>
-          <button type="button" onClick={addTiming} className="m3-button-tonal py-1.5 px-4 text-sm">
-            <Plus size={16} /> Add Step
-          </button>
+          <div className="flex gap-2">
+            <button 
+              type="button" 
+              onClick={() => setShowTimer(true)}
+              className="flex items-center justify-center bg-secondary-container text-on-secondary-container w-12 h-12 rounded-xl shrink-0 hover:bg-secondary-container/80 transition-colors"
+              title="Open Timer"
+            >
+              <Timer size={20} />
+            </button>
+            <button type="button" onClick={addTiming} className="m3-button-tonal py-1.5 px-4 text-sm">
+              <Plus size={16} /> Add Step
+            </button>
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -528,6 +596,106 @@ export default function BrewLogForm({ onSave, userId, savedBeans, savedGrinders,
           </div>
         </div>
       </div>
+
+      {/* Timer Modal */}
+      <AnimatePresence initial={false}>
+        {showTimer && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={closeTimer}
+            >
+              {/* Modal */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                className="bg-surface rounded-3xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-secondary-container rounded-2xl">
+                        <Timer className="text-on-secondary-container" size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold">Brew Timer</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={closeTimer}
+                      className="p-2 hover:bg-surface-variant rounded-full transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  {/* Timer Display */}
+                  <div className="text-center mb-8">
+                    <div className="text-6xl font-mono font-normal text-primary mb-2 tracking-tight">
+                      {formatTime(timerTime)}
+                    </div>
+                  </div>
+
+                  {/* Timer Controls */}
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      type="button"
+                      onClick={resetTimer}
+                      className="flex items-center gap-2 bg-surface-variant text-on-surface-variant px-6 py-3 rounded-2xl font-bold hover:bg-surface-variant/80 transition-colors"
+                    >
+                      <RotateCcw size={18} />
+                      Reset
+                    </button>
+                    {!isTimerRunning ? (
+                      <button
+                        type="button"
+                        onClick={startTimer}
+                        className="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 transition-colors"
+                      >
+                        <Play size={18} />
+                        Start
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={pauseTimer}
+                        className="flex items-center gap-2 bg-secondary text-on-secondary px-6 py-3 rounded-2xl font-bold hover:bg-secondary/90 transition-colors"
+                      >
+                        <Pause size={18} />
+                        Pause
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Quick Time Markers */}
+                  {timerTime > 0 && (
+                    <div className="mt-6 p-4 bg-surface-variant/30 rounded-2xl">
+                      <p className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">Quick Reference</p>
+                      <div className="text-sm space-y-1">
+                        <div className="flex justify-between">
+                          <span>Bloom time:</span>
+                          <span className="font-mono">0:30 - 0:45</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Total brew time:</span>
+                          <span className="font-mono">2:30 - 4:00</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="flex gap-4">
         {onCancel && (

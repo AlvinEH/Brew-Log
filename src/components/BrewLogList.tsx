@@ -294,7 +294,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
 
                       {log.notes && (
                         <div className="mt-4 pt-4 border-t border-black/5">
-                          <p className="text-sm italic opacity-70">{log.notes}</p>
+                          <p className="text-sm italic opacity-70 whitespace-pre-wrap">{log.notes}</p>
                         </div>
                       )}
                     </motion.div>
