@@ -55,6 +55,7 @@ import TemperatureConverter from './components/TemperatureConverter';
 import CoffeeBeanTab from './components/CoffeeBeanTab';
 import GrinderTab from './components/GrinderTab';
 import FloatingActionButton from './components/FloatingActionButton';
+import CustomSelect from './components/CustomSelect';
 
 type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'grinders' | 'settings' | 'new-bean' | 'new-grinder' | 'new-recipe';
 type SettingsSubTab = 'ratio' | 'temp' | 'preferences' | 'account';
@@ -699,17 +700,16 @@ export default function App() {
                     <h2 className="text-lg font-bold">Settings Menu</h2>
                   </div>
                   <div className="relative">
-                    <select
+                    <CustomSelect
                       value={settingsSubTab}
-                      onChange={(e) => setSettingsSubTab(e.target.value as SettingsSubTab)}
-                      className="m3-input w-full appearance-none bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5rem' }}
-                    >
-                      <option value="ratio">Ratio Calculator</option>
-                      <option value="temp">Temperature Converter</option>
-                      <option value="preferences">Preferences</option>
-                      <option value="account">Account Info</option>
-                    </select>
+                      onChange={(val) => setSettingsSubTab(val as SettingsSubTab)}
+                      options={[
+                        { value: 'ratio', label: 'Ratio Calculator' },
+                        { value: 'temp', label: 'Temperature Converter' },
+                        { value: 'preferences', label: 'Preferences' },
+                        { value: 'account', label: 'Account Info' },
+                      ]}
+                    />
                   </div>
                 </div>
 
@@ -733,63 +733,49 @@ export default function App() {
                         </div>
 
                         <div className="space-y-6">
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Theme</label>
-                            <select
-                              value={settings.theme}
-                              onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
-                              className="m3-input w-full appearance-none bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5rem' }}
-                            >
-                              <option value="system">System Default</option>
-                              <option value="light">Light Mode</option>
-                              <option value="dark">Dark Mode</option>
-                            </select>
-                          </div>
+                          <CustomSelect
+                            label="Theme"
+                            value={settings.theme}
+                            onChange={(val) => updateSettings({ theme: val as 'light' | 'dark' | 'system' })}
+                            options={[
+                              { value: 'system', label: 'System Default' },
+                              { value: 'light', label: 'Light Mode' },
+                              { value: 'dark', label: 'Dark Mode' },
+                            ]}
+                          />
 
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Color Scheme</label>
-                            <select
-                              value={settings.colorScheme}
-                              onChange={(e) => updateSettings({ colorScheme: e.target.value as ColorScheme })}
-                              className="m3-input w-full appearance-none bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5rem' }}
-                            >
-                              <option value="default">Coffee (Default)</option>
-                              <option value="catppuccin">Catppuccin</option>
-                              <option value="rose-pine">Rose Pine</option>
-                              <option value="gruvbox">Gruvbox</option>
-                              <option value="everforest">Everforest</option>
-                            </select>
-                          </div>
+                          <CustomSelect
+                            label="Color Scheme"
+                            value={settings.colorScheme}
+                            onChange={(val) => updateSettings({ colorScheme: val as ColorScheme })}
+                            options={[
+                              { value: 'default', label: 'Coffee (Default)' },
+                              { value: 'catppuccin', label: 'Catppuccin' },
+                              { value: 'rose-pine', label: 'Rose Pine' },
+                              { value: 'gruvbox', label: 'Gruvbox' },
+                              { value: 'everforest', label: 'Everforest' },
+                            ]}
+                          />
 
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Temperature Unit</label>
-                            <select
-                              value={settings.tempUnit}
-                              onChange={(e) => updateSettings({ tempUnit: e.target.value as 'C' | 'F' })}
-                              className="m3-input w-full appearance-none bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5rem' }}
-                            >
-                              <option value="F">Fahrenheit (°F)</option>
-                              <option value="C">Celsius (°C)</option>
-                            </select>
-                          </div>
+                          <CustomSelect
+                            label="Temperature Unit"
+                            value={settings.tempUnit}
+                            onChange={(val) => updateSettings({ tempUnit: val as 'C' | 'F' })}
+                            options={[
+                              { value: 'F', label: 'Fahrenheit (°F)' },
+                              { value: 'C', label: 'Celsius (°C)' },
+                            ]}
+                          />
 
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Default Grinder</label>
-                            <select
-                              value={settings.defaultGrinderId || ''}
-                              onChange={(e) => updateSettings({ defaultGrinderId: e.target.value || undefined })}
-                              className="m3-input w-full appearance-none bg-surface-variant/30 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.5rem' }}
-                            >
-                              <option value="">None</option>
-                              {grinders.map(g => (
-                                <option key={g.id} value={g.id}>{g.name}</option>
-                              ))}
-                            </select>
-                          </div>
+                          <CustomSelect
+                            label="Default Grinder"
+                            value={settings.defaultGrinderId || ''}
+                            onChange={(val) => updateSettings({ defaultGrinderId: val || undefined })}
+                            options={[
+                              { value: '', label: 'None' },
+                              ...grinders.map(g => ({ value: g.id || '', label: g.name }))
+                            ]}
+                          />
 
                           <div>
                             <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-3 ml-1">Gemini API Key (Optional)</label>
@@ -926,12 +912,12 @@ const NavButton = React.memo(({ active, onClick, icon, label }: { active: boolea
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 transition-all duration-300 relative flex-1 touch-manipulation ${active ? 'text-primary' : 'text-outline opacity-60'}`}
+      className={`flex flex-col items-center gap-1 transition-all duration-300 relative flex-1 touch-manipulation ${active ? 'text-primary' : 'text-on-surface opacity-90'}`}
     >
       <div className={`p-2 rounded-2xl transition-all duration-300 ${active ? 'bg-primary-container' : 'bg-transparent'}`}>
         {icon}
       </div>
-      <span className={`text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'opacity-100' : 'opacity-80'}`}>
+      <span className={`text-[9px] font-bold uppercase tracking-wider transition-all ${active ? 'opacity-100' : 'opacity-90'}`}>
         {label}
       </span>
       {active && (

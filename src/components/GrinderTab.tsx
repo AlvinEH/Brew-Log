@@ -122,7 +122,7 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
                       key={t}
                       type="button"
                       onClick={() => setType(t)}
-                      className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${type === t ? 'bg-primary text-on-primary shadow-lg scale-105' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+                      className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${type === t ? 'bg-primary text-on-primary shadow-lg scale-105' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
                     >
                       {t}
                     </button>

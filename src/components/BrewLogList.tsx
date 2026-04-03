@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Star, Trash2, ChevronRight, Droplets, Bean, Coffee, Sparkles, Filter, X, History, Scale, Thermometer, Pencil, Hammer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, Recipe, CoffeeBean } from '../types';
+import CustomSelect from './CustomSelect';
 
 interface Props {
   logs: BrewLog[];
@@ -79,7 +80,7 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
           </div>
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-xl transition-all ${showFilters || hasActiveFilters ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+            className={`p-2 rounded-xl transition-all ${showFilters || hasActiveFilters ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
           >
             <Filter size={20} />
           </button>
@@ -115,17 +116,16 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">Coffee Bean</label>
-                  <select 
-                    value={selectedBean} 
-                    onChange={(e) => setSelectedBean(e.target.value)}
-                    className="m3-input h-12 text-sm appearance-none"
-                  >
-                    <option value="">All Beans</option>
-                    {uniqueBeanNames.map(name => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    label="Coffee Bean"
+                    value={selectedBean}
+                    onChange={setSelectedBean}
+                    options={[
+                      { value: '', label: 'All Beans' },
+                      ...uniqueBeanNames.map(name => ({ value: name, label: name }))
+                    ]}
+                    className="h-12"
+                  />
                 </div>
                 {hasActiveFilters && (
                   <button 

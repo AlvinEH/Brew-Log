@@ -3,6 +3,7 @@ import { Bean, Plus, Globe, Loader2, Trash2, Tag, DollarSign, Weight, Star, Edit
 import { motion, AnimatePresence } from 'motion/react';
 import { extractBeanInfoFromUrl } from '../services/gemini';
 import { CoffeeBean, BrewLog, UserSettings } from '../types';
+import CustomSelect from './CustomSelect';
 
 interface Props {
   beans: CoffeeBean[];
@@ -344,18 +345,12 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">Roaster</label>
                     <div className="relative">
-                      <select 
+                      <CustomSelect
                         value={selectedRoaster}
-                        onChange={(e) => setSelectedRoaster(e.target.value)}
-                        className="m3-input h-12 text-sm appearance-none pr-10"
-                      >
-                        {roasters.map(r => (
-                          <option key={r} value={r}>{r}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                        <Tag size={14} />
-                      </div>
+                        onChange={setSelectedRoaster}
+                        options={roasters.map(r => ({ value: r, label: r }))}
+                        className="h-12"
+                      />
                     </div>
                   </div>
                   {selectedRoaster !== 'All Roasters' && (
@@ -376,13 +371,13 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
           <div className="flex gap-2 p-1 bg-surface-variant rounded-2xl max-w-md mx-auto w-full">
             <button 
               onClick={() => setActiveTab('stock')}
-              className={`flex-1 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'stock' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:bg-black/5'}`}
+              className={`flex-1 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'stock' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface hover:bg-black/5'}`}
             >
               In Stock
             </button>
             <button 
               onClick={() => setActiveTab('archived')}
-              className={`flex-1 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'archived' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:bg-black/5'}`}
+              className={`flex-1 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'archived' ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface hover:bg-black/5'}`}
             >
               Archive
             </button>
