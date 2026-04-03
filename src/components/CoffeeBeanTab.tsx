@@ -17,7 +17,7 @@ interface Props {
   settings: UserSettings;
 }
 
-export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingBean, settings }: Props) {
+const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingBean, settings }: Props) => {
   const [url, setUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [showForm, setShowForm] = useState(initialShowForm || false);
@@ -28,7 +28,7 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
   const [showFilters, setShowFilters] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 
-  const roasters = ['All Roasters', ...Array.from(new Set(beans.map(b => b.roaster))).sort()];
+  const roasters = React.useMemo(() => ['All Roasters', ...Array.from(new Set(beans.map(b => b.roaster))).sort()], [beans]);
 
   React.useEffect(() => {
     if (initialShowForm) {
@@ -703,6 +703,8 @@ export default function CoffeeBeanTab({ beans, logs, onSave, onDelete, userId, i
     </motion.div>
   </AnimatePresence>
 )}
-</div>
-);
-}
+    </div>
+  );
+});
+
+export default CoffeeBeanTab;

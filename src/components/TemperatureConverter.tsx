@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Thermometer } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function TemperatureConverter() {
+const TemperatureConverter = React.memo(() => {
   const [celsius, setCelsius] = useState('');
   const [fahrenheit, setFahrenheit] = useState('');
 
@@ -72,4 +72,6 @@ export default function TemperatureConverter() {
       </p>
     </motion.div>
   );
-}
+});
+
+export default TemperatureConverter;

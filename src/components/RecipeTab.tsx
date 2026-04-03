@@ -17,7 +17,7 @@ interface Props {
   settings: UserSettings;
 }
 
-export default function RecipeTab({ 
+const RecipeTab = React.memo(({ 
   recipes, 
   onSave, 
   onDelete, 
@@ -27,7 +27,7 @@ export default function RecipeTab({
   onEdit,
   editingRecipe: initialEditingRecipe,
   settings 
-}: Props) {
+}: Props) => {
   const [showForm, setShowForm] = useState(initialShowForm);
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(initialEditingRecipe || null);
 
@@ -148,4 +148,6 @@ export default function RecipeTab({
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default RecipeTab;

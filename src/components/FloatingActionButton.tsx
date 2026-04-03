@@ -44,7 +44,7 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-[70] flex flex-col items-end gap-4"
+            className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-6 z-[70] flex flex-col items-end gap-4"
           >
             <AnimatePresence initial={false}>
               {isOpen && (

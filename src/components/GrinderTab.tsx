@@ -14,7 +14,7 @@ interface Props {
   editingGrinder?: Grinder | null;
 }
 
-export default function GrinderTab({ grinders, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingGrinder }: Props) {
+const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingGrinder }: Props) => {
   const [showForm, setShowForm] = useState(initialShowForm || false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(editingGrinder?.id || null);
@@ -224,6 +224,8 @@ export default function GrinderTab({ grinders, onSave, onDelete, userId, initial
         </motion.div>
       </div>
     )}
-  </div>
-);
-}
+    </div>
+  );
+});
+
+export default GrinderTab;

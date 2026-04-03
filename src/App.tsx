@@ -72,15 +72,18 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('history');
   const [previousTab, setPreviousTab] = useState<Tab>('history');
 
-  const navigateToTab = (newTab: Tab) => {
-    const isNewTab = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(newTab);
-    const isCurrentTabNew = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(activeTab);
+  const navigateToTab = React.useCallback((newTab: Tab) => {
+    setActiveTab(prev => {
+      const isNewTab = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(newTab);
+      const isCurrentTabNew = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(prev);
 
-    if (isNewTab && !isCurrentTabNew) {
-      setPreviousTab(activeTab);
-    }
-    setActiveTab(newTab);
-  };
+      if (isNewTab && !isCurrentTabNew) {
+        setPreviousTab(prev);
+      }
+      return newTab;
+    });
+  }, []);
+
   const [logs, setLogs] = useState<BrewLog[]>([]);
   const [beans, setBeans] = useState<CoffeeBean[]>([]);
   const [grinders, setGrinders] = useState<Grinder[]>([]);
@@ -99,7 +102,7 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = React.useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,21 +110,21 @@ export default function App() {
       
       // Only hide on mobile/small screens
       if (window.innerWidth < 768) {
-        if (currentScrollY > lastScrollY && currentScrollY > 80) {
-          setIsNavVisible(false);
+        if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+          setIsNavVisible(prev => prev ? false : prev);
         } else {
-          setIsNavVisible(true);
+          setIsNavVisible(prev => !prev ? true : prev);
         }
       } else {
-        setIsNavVisible(true);
+        setIsNavVisible(prev => !prev ? true : prev);
       }
       
-      setLastScrollY(currentScrollY);
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   useEffect(() => {
     if (activeTab !== 'recipes' && activeTab !== 'new-recipe') {
@@ -302,19 +305,18 @@ export default function App() {
     return () => unsubSettings();
   }, [user?.uid]);
 
-  const handleLogin = async () => {
+  const handleLogin = React.useCallback(async () => {
     try {
       await signInWithPopup(auth, getGoogleProvider());
     } catch (err) {
       setError('Failed to login. Please try again.');
     }
-  };
+  }, []);
 
-  const handleLogout = () => signOut(auth);
+  const handleLogout = React.useCallback(() => signOut(auth), []);
 
-  const saveLog = async (log: BrewLog) => {
+  const saveLog = React.useCallback(async (log: BrewLog) => {
     console.log("saveLog called with:", log);
-    console.log("Current user:", user);
     
     if (!user?.uid) {
       console.error("User not authenticated");
@@ -388,26 +390,22 @@ export default function App() {
       setError(err instanceof Error ? err.message : 'An error occurred while saving the brew log.');
       throw err;
     }
-  };
+  }, [user?.uid, navigateToTab]);
 
-  const handleEditLog = (log: BrewLog) => {
+  const handleEditLog = React.useCallback((log: BrewLog) => {
     navigateToTab('new');
     setEditingLog(log);
-  };
+  }, [navigateToTab]);
 
-  const deleteLog = async (id: string) => {
+  const deleteLog = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'brews', id));
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, 'brews');
     }
-  };
+  }, []);
 
-  const saveBean = async (bean: CoffeeBean) => {
-    console.log("saveBean called with:", bean);
-    console.log("Current user:", user);
-    console.log("User authenticated:", !!user?.uid);
-    
+  const saveBean = React.useCallback(async (bean: CoffeeBean) => {
     if (!user?.uid) {
       console.error("User not authenticated");
       setError("You must be signed in to save beans");
@@ -416,33 +414,27 @@ export default function App() {
     
     try {
       if (bean.id) {
-        console.log("Updating existing bean with ID:", bean.id);
         const { id, ...data } = bean;
-        console.log("Data to update:", data);
         await updateDoc(doc(db, 'beans', id), data);
-        console.log("Bean updated successfully");
       } else {
-        console.log("Creating new bean with data:", bean);
-        const docRef = await addDoc(collection(db, 'beans'), bean);
-        console.log("Bean created with ID:", docRef.id);
+        await addDoc(collection(db, 'beans'), bean);
       }
     } catch (err) {
-      console.error("saveBean error:", err);
       handleFirestoreError(err, bean.id ? OperationType.UPDATE : OperationType.CREATE, 'beans');
       setError(err instanceof Error ? err.message : 'An error occurred while saving the bean.');
       throw err;
     }
-  };
+  }, [user?.uid]);
 
-  const deleteBean = async (id: string) => {
+  const deleteBean = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'beans', id));
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, 'beans');
     }
-  };
+  }, []);
 
-  const saveGrinder = async (grinder: Grinder) => {
+  const saveGrinder = React.useCallback(async (grinder: Grinder) => {
     try {
       if (grinder.id) {
         const { id, ...data } = grinder;
@@ -455,25 +447,25 @@ export default function App() {
       setError(err instanceof Error ? err.message : 'An error occurred while saving the grinder.');
       throw err;
     }
-  };
+  }, []);
 
-  const deleteGrinder = async (id: string) => {
+  const deleteGrinder = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'grinders', id));
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, 'grinders');
     }
-  };
+  }, []);
 
-  const deleteRecipe = async (id: string) => {
+  const deleteRecipe = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'recipes', id));
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, `recipes/${id}`);
     }
-  };
+  }, []);
 
-  const updateSettings = async (newSettings: Partial<UserSettings>) => {
+  const updateSettings = React.useCallback(async (newSettings: Partial<UserSettings>) => {
     if (!user) return;
     try {
       const settingsDocRef = doc(db, 'settings', user.uid);
@@ -490,7 +482,41 @@ export default function App() {
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, 'settings');
     }
-  };
+  }, [user, settings]);
+
+  const handleSaveRecipe = React.useCallback(async (recipe: Recipe) => {
+    if (!user) return;
+    try {
+      if (recipe.id) {
+        const { id, ...data } = recipe;
+        await updateDoc(doc(db, 'recipes', id), data);
+      } else {
+        await addDoc(collection(db, 'recipes'), {
+          ...recipe,
+          userId: user.uid,
+          createdAt: new Date().toISOString()
+        });
+      }
+      setEditingRecipe(null);
+    } catch (err) {
+      handleFirestoreError(err, recipe.id ? OperationType.UPDATE : OperationType.CREATE, 'recipes');
+    }
+  }, [user]);
+
+  const handleSaveAsRecipe = React.useCallback((logData: Partial<BrewLog>) => {
+    const recipeData: Partial<Recipe> = {
+      title: `${logData.beanName || 'New'} Recipe`,
+      source: 'Personal Brew',
+      description: logData.notes || '',
+      coffeeWeight: logData.coffeeWeight || 15,
+      waterWeight: logData.waterWeight || 225,
+      ratio: logData.ratio || '1:15',
+      timings: logData.timings || [],
+      steps: logData.timings?.map(t => t.step) || []
+    };
+    setEditingRecipe(recipeData);
+    navigateToTab('new-recipe');
+  }, [navigateToTab]);
 
   if (loading) {
     return (
@@ -526,44 +552,10 @@ export default function App() {
     );
   }
 
-  const handleSaveRecipe = async (recipe: Recipe) => {
-    if (!user) return;
-    try {
-      if (recipe.id) {
-        const { id, ...data } = recipe;
-        await updateDoc(doc(db, 'recipes', id), data);
-      } else {
-        await addDoc(collection(db, 'recipes'), {
-          ...recipe,
-          userId: user.uid,
-          createdAt: new Date().toISOString()
-        });
-      }
-      setEditingRecipe(null);
-    } catch (err) {
-      handleFirestoreError(err, recipe.id ? OperationType.UPDATE : OperationType.CREATE, 'recipes');
-    }
-  };
-
-  const handleSaveAsRecipe = (logData: Partial<BrewLog>) => {
-    const recipeData: Partial<Recipe> = {
-      title: `${logData.beanName || 'New'} Recipe`,
-      source: 'Personal Brew',
-      description: logData.notes || '',
-      coffeeWeight: logData.coffeeWeight || 15,
-      waterWeight: logData.waterWeight || 225,
-      ratio: logData.ratio || '1:15',
-      timings: logData.timings || [],
-      steps: logData.timings?.map(t => t.step) || []
-    };
-    setEditingRecipe(recipeData);
-    navigateToTab('new-recipe');
-  };
-
   return (
-    <div className="min-h-screen bg-surface pb-24">
+    <div className="min-h-screen bg-surface pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-black/5 px-6 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-black/5 px-6 py-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Coffee className="text-primary" size={28} />
           <span className="text-2xl font-bold tracking-tight">Brewing</span>
@@ -877,7 +869,7 @@ export default function App() {
         initial={false}
         animate={{ y: isNavVisible ? 0 : '100%' }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-black/5 px-4 py-3 flex justify-around items-center shadow-2xl z-50 select-none"
+        className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-black/5 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-2xl z-50 select-none"
       >
         <NavButton 
           active={activeTab === 'history'} 
@@ -918,7 +910,7 @@ export default function App() {
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-24 left-6 right-6 bg-red-100 text-red-800 p-4 rounded-2xl flex items-center gap-3 shadow-lg z-[60]"
+            className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-6 right-6 bg-red-100 text-red-800 p-4 rounded-2xl flex items-center gap-3 shadow-lg z-[60]"
           >
             <AlertCircle size={20} />
             <span className="flex-1 text-sm font-medium">{error}</span>
@@ -930,7 +922,7 @@ export default function App() {
   );
 }
 
-function NavButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+const NavButton = React.memo(({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) => {
   return (
     <button 
       onClick={onClick}
@@ -950,5 +942,5 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
       )}
     </button>
   );
-}
+});
 

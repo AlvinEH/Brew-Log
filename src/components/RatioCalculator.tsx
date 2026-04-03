@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scale, Calculator } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function RatioCalculator() {
+const RatioCalculator = React.memo(() => {
   const [coffee, setCoffee] = useState<string>('15');
   const [water, setWater] = useState<string>('225');
   const [ratio, setRatio] = useState<number>(15);
@@ -95,4 +95,6 @@ export default function RatioCalculator() {
       </div>
     </motion.div>
   );
-}
+});
+
+export default RatioCalculator;

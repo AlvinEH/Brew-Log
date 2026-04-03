@@ -11,7 +11,7 @@ interface Props {
   savedBeans: CoffeeBean[];
 }
 
-export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, savedBeans }: Props) {
+const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBeans }: Props) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedBean, setSelectedBean] = useState('');
@@ -43,6 +43,10 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
       return dateMatch && beanMatch;
     });
   }, [logs, startDate, endDate, selectedBean]);
+
+  const uniqueBeanNames = useMemo(() => {
+    return Array.from(new Set(logs.map(l => l.beanName))).sort();
+  }, [logs]);
 
   const clearFilters = () => {
     setStartDate('');
@@ -118,7 +122,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
                     className="m3-input h-12 text-sm appearance-none"
                   >
                     <option value="">All Beans</option>
-                    {Array.from(new Set(logs.map(l => l.beanName))).sort().map(name => (
+                    {uniqueBeanNames.map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
@@ -294,7 +298,7 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
 
                       {log.notes && (
                         <div className="mt-4 pt-4 border-t border-black/5">
-                          <p className="text-sm italic opacity-70 whitespace-pre-wrap">{log.notes}</p>
+                          <p className="text-sm italic opacity-70">{log.notes}</p>
                         </div>
                       )}
                     </motion.div>
@@ -309,6 +313,8 @@ export default function BrewLogList({ logs, onDelete, onEdit, savedRecipes, save
       )}
     </div>
   );
-}
+});
+
+export default BrewLogList;
 
 
