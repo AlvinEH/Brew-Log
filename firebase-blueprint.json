@@ -92,6 +92,19 @@
       },
       "required": ["userId", "name"]
     },
+    "Brewer": {
+      "title": "Brewer",
+      "description": "A coffee brewer (e.g. V60, Chemex) saved by the user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "type": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["userId", "name"]
+    },
     "UserSettings": {
       "title": "UserSettings",
       "description": "User preferences and settings.",
@@ -124,6 +137,10 @@
     "/grinders": {
       "schema": "Grinder",
       "description": "Collection of saved coffee grinders."
+    },
+    "/brewers": {
+      "schema": "Brewer",
+      "description": "Collection of saved coffee brewers."
     },
     "/settings": {
       "schema": "UserSettings",

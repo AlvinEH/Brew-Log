@@ -69,33 +69,40 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
   return (
     <div className="space-y-6 pb-20">
       {/* Filters Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <History size={20} className="text-primary" />
-            <h2 className="text-xl font-bold">Brew History</h2>
-            <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
-              {filteredLogs.length}
-            </span>
-          </div>
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-xl transition-all ${showFilters || hasActiveFilters ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
-          >
-            <Filter size={20} />
-          </button>
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-2">
+          <History size={20} className="text-primary" />
+          <h2 className="text-xl font-bold">Brew History</h2>
+          <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
+            {filteredLogs.length}
+          </span>
         </div>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className={`p-2 rounded-xl transition-all ${showFilters || hasActiveFilters ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
+        >
+          <Filter size={20} />
+        </button>
+      </div>
 
-        <AnimatePresence initial={false}>
-          {showFilters && (
+      <AnimatePresence initial={false}>
+        {showFilters && (
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
+              animate={{ 
+                opacity: 1, 
+                height: 'auto',
+                transitionEnd: { overflow: 'visible' }
+              }}
+              exit={{ 
+                opacity: 0, 
+                height: 0,
+                overflow: 'hidden'
+              }}
+              className="relative z-20"
             >
-              <div className="m3-card bg-surface-variant/20 border-none space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="m3-card bg-surface-variant/20 border-none space-y-6 mb-4 p-6 sm:p-8 pb-10 sm:pb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">From Date</label>
                     <input 
@@ -116,15 +123,14 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
                   </div>
                 </div>
                 <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">Coffee Bean</label>
                   <CustomSelect
-                    label="Coffee Bean"
                     value={selectedBean}
                     onChange={setSelectedBean}
                     options={[
                       { value: '', label: 'All Beans' },
                       ...uniqueBeanNames.map(name => ({ value: name, label: name }))
                     ]}
-                    className="h-12"
                   />
                 </div>
                 {hasActiveFilters && (
@@ -140,7 +146,6 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
       {filteredLogs.length === 0 ? (
         <div className="text-center py-20 opacity-50">

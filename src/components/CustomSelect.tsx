@@ -66,7 +66,7 @@ const CustomSelect: React.FC<Props> = ({ value, onChange, options, placeholder =
             animate={{ opacity: 1, y: 4, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute z-[100] left-0 right-0 mt-1 bg-surface border border-black/5 rounded-2xl shadow-2xl overflow-hidden"
+            className="absolute z-[1000] left-0 right-0 mt-1 bg-surface border border-black/5 rounded-2xl shadow-2xl overflow-hidden"
           >
             <div className="max-h-60 overflow-y-auto p-2 space-y-1">
               {options.map((option) => (

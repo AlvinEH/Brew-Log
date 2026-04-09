@@ -316,8 +316,8 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
   return (
     <div className="space-y-6">
       {!showForm && (
-        <>
-          <div className="flex items-center justify-between px-2 mb-2">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <Bean size={20} className="text-primary" />
               <h2 className="text-xl font-bold">Coffee Beans</h2>
@@ -327,7 +327,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
             </div>
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className={`p-2 rounded-xl transition-all ${showFilters || selectedRoaster !== 'All Roasters' ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+              className={`p-2 rounded-xl transition-all ${showFilters || selectedRoaster !== 'All Roasters' ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
             >
               <Filter size={20} />
             </button>
@@ -337,11 +337,19 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
             {showFilters && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden mb-4"
+                animate={{ 
+                  opacity: 1, 
+                  height: 'auto',
+                  transitionEnd: { overflow: 'visible' }
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  height: 0,
+                  overflow: 'hidden'
+                }}
+                className="relative z-20 mb-4"
               >
-                <div className="m3-card bg-surface-variant/20 border-none space-y-4">
+                <div className="m3-card bg-surface-variant/20 border-none space-y-6 mb-2 p-6 sm:p-8 pb-10 sm:pb-12">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 ml-1">Roaster</label>
                     <div className="relative">
@@ -349,7 +357,6 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
                         value={selectedRoaster}
                         onChange={setSelectedRoaster}
                         options={roasters.map(r => ({ value: r, label: r }))}
-                        className="h-12"
                       />
                     </div>
                   </div>
@@ -382,7 +389,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
               Archive
             </button>
           </div>
-        </>
+        </div>
       )}
 
       <AnimatePresence initial={false}>

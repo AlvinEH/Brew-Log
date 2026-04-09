@@ -64,6 +64,15 @@ export interface Grinder {
   notes?: string;
 }
 
+export interface Brewer {
+  id?: string;
+  userId: string;
+  name: string;
+  brand?: string;
+  type?: string; // e.g. V60, Chemex, Aeropress
+  notes?: string;
+}
+
 export type ColorScheme = 'default' | 'catppuccin' | 'rose-pine' | 'gruvbox' | 'everforest';
 
 export interface UserSettings {

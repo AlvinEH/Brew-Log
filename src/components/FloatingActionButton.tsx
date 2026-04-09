@@ -6,11 +6,12 @@ interface Props {
   onAddBrew: () => void;
   onAddBean: () => void;
   onAddGrinder: () => void;
+  onAddBrewer: () => void;
   onAddRecipe: () => void;
   visible?: boolean;
 }
 
-export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinder, onAddRecipe, visible = true }: Props) {
+export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinder, onAddBrewer, onAddRecipe, visible = true }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +94,22 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
                     </span>
                     <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
                       <Hammer size={24} />
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                    transition={{ delay: 0.12 }}
+                    onClick={() => handleAction(onAddBrewer)}
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="bg-surface-variant text-on-surface-variant px-3 py-1.5 rounded-xl text-sm font-bold shadow-lg transition-opacity">
+                      New Brewer
+                    </span>
+                    <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
+                      <Coffee size={24} />
                     </div>
                   </motion.button>
 

@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Loader2, Info, Hammer } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Info, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Grinder } from '../types';
+import { Brewer } from '../types';
 
 interface Props {
-  grinders: Grinder[];
-  onSave: (grinder: Grinder) => Promise<void>;
+  brewers: Brewer[];
+  onSave: (brewer: Brewer) => Promise<void>;
   onDelete: (id: string) => void;
   userId: string;
   initialShowForm?: boolean;
   onFormClose?: () => void;
-  onEdit?: (grinder: Grinder) => void;
-  editingGrinder?: Grinder | null;
+  onEdit?: (brewer: Brewer) => void;
+  editingBrewer?: Brewer | null;
 }
 
-const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingGrinder }: Props) => {
+const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowForm, onFormClose, onEdit, editingBrewer }: Props) => {
   const [showForm, setShowForm] = useState(initialShowForm || false);
   const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(editingGrinder?.id || null);
+  const [editingId, setEditingId] = useState<string | null>(editingBrewer?.id || null);
   
   // Form state
-  const [name, setName] = useState(editingGrinder?.name || '');
-  const [brand, setBrand] = useState(editingGrinder?.brand || '');
-  const [type, setType] = useState<'Manual' | 'Electric'>(editingGrinder?.type || 'Manual');
-  const [notes, setNotes] = useState(editingGrinder?.notes || '');
+  const [name, setName] = useState(editingBrewer?.name || '');
+  const [brand, setBrand] = useState(editingBrewer?.brand || '');
+  const [type, setType] = useState(editingBrewer?.type || '');
+  const [notes, setNotes] = useState(editingBrewer?.notes || '');
 
   React.useEffect(() => {
     if (initialShowForm) {
@@ -32,21 +32,21 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
   }, [initialShowForm]);
 
   React.useEffect(() => {
-    if (editingGrinder) {
-      setEditingId(editingGrinder.id || null);
-      setName(editingGrinder.name);
-      setBrand(editingGrinder.brand || '');
-      setType(editingGrinder.type || 'Manual');
-      setNotes(editingGrinder.notes || '');
+    if (editingBrewer) {
+      setEditingId(editingBrewer.id || null);
+      setName(editingBrewer.name);
+      setBrand(editingBrewer.brand || '');
+      setType(editingBrewer.type || '');
+      setNotes(editingBrewer.notes || '');
     }
-  }, [editingGrinder]);
+  }, [editingBrewer]);
 
-  const startEdit = (grinder: Grinder) => {
-    setEditingId(grinder.id || null);
-    setName(grinder.name);
-    setBrand(grinder.brand || '');
-    setType(grinder.type || 'Manual');
-    setNotes(grinder.notes || '');
+  const startEdit = (brewer: Brewer) => {
+    setEditingId(brewer.id || null);
+    setName(brewer.name);
+    setBrand(brewer.brand || '');
+    setType(brewer.type || '');
+    setNotes(brewer.notes || '');
     setShowForm(true);
   };
 
@@ -54,19 +54,19 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
     e.preventDefault();
     setSaving(true);
     try {
-      const grinder: Grinder = {
+      const brewer: Brewer = {
         userId,
         name,
         brand,
         type,
         notes
       };
-      if (editingId) grinder.id = editingId;
+      if (editingId) brewer.id = editingId;
       
-      await onSave(grinder);
+      await onSave(brewer);
       resetForm();
     } catch (err) {
-      console.error("Failed to save grinder:", err);
+      console.error("Failed to save brewer:", err);
     } finally {
       setSaving(false);
     }
@@ -75,7 +75,7 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
   const resetForm = () => {
     setName('');
     setBrand('');
-    setType('Manual');
+    setType('');
     setNotes('');
     setEditingId(null);
     setShowForm(false);
@@ -94,46 +94,35 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
           >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
-                <Hammer className="text-on-primary-container" size={24} />
+                <Coffee className="text-on-primary-container" size={24} />
               </div>
-              <h2 className="text-3xl font-bold tracking-tight">{editingId ? 'Edit Grinder' : 'New Grinder'}</h2>
+              <h2 className="text-3xl font-bold tracking-tight">{editingId ? 'Edit Brewer' : 'New Brewer'}</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-10">
               <div className="pb-8 border-b border-black/5">
-                <h3 className="text-xl font-bold mb-6">Grinder Details</h3>
+                <h3 className="text-xl font-bold mb-6">Brewer Details</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Grinder Name*</label>
-                    <input required placeholder="e.g. Comandante C40" value={name} onChange={e => setName(e.target.value)} className="m3-input h-11" />
+                    <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Brewer Name*</label>
+                    <input required placeholder="e.g. Hario V60" value={name} onChange={e => setName(e.target.value)} className="m3-input h-11" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Brand</label>
-                    <input placeholder="e.g. Comandante" value={brand} onChange={e => setBrand(e.target.value)} className="m3-input h-11" />
+                    <input placeholder="e.g. Hario" value={brand} onChange={e => setBrand(e.target.value)} className="m3-input h-11" />
                   </div>
                 </div>
               </div>
               
               <div className="pb-8 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Type</h3>
-                <div className="flex gap-4">
-                  {(['Manual', 'Electric'] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setType(t)}
-                      className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${type === t ? 'bg-primary text-on-primary shadow-lg scale-105' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                <input placeholder="e.g. Pourover, Immersion, Press" value={type} onChange={e => setType(e.target.value)} className="m3-input h-11" />
               </div>
 
               <div className="pb-8 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Notes</h3>
                 <textarea 
-                  placeholder="e.g. Best for pourover, 25 clicks is my baseline" 
+                  placeholder="e.g. Use 02 size filters, pre-heat well" 
                   value={notes} 
                   onChange={e => setNotes(e.target.value)} 
                   className="m3-input min-h-[120px]" 
@@ -143,7 +132,7 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
               <div className="flex gap-4">
                 <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center">Cancel</button>
                 <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-4 text-lg shadow-lg justify-center">
-                  {saving ? <Loader2 className="animate-spin" size={24} /> : (editingId ? 'Update Grinder' : 'Save Grinder')}
+                  {saving ? <Loader2 className="animate-spin" size={24} /> : (editingId ? 'Update Brewer' : 'Save Brewer')}
                 </button>
               </div>
             </form>
@@ -155,9 +144,9 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
         <div className="space-y-6">
           <motion.div layout className="grid gap-4 md:grid-cols-2 overflow-hidden">
           <AnimatePresence mode="popLayout" initial={false}>
-            {grinders.map((grinder) => (
+            {brewers.map((brewer) => (
               <motion.div 
-                key={grinder.id}
+                key={brewer.id}
                 layout="position"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -170,18 +159,18 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h3 className="text-lg font-bold">{grinder.name}</h3>
-                    <p className="text-sm opacity-70">{grinder.brand || 'Unknown Brand'}</p>
+                    <h3 className="text-lg font-bold">{brewer.name}</h3>
+                    <p className="text-sm opacity-70">{brewer.brand || 'Unknown Brand'}</p>
                   </div>
                   <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button 
-                      onClick={() => onEdit ? onEdit(grinder) : startEdit(grinder)}
+                      onClick={() => onEdit ? onEdit(brewer) : startEdit(brewer)}
                       className="p-2 text-primary hover:bg-primary-container rounded-full"
                     >
                       <Edit2 size={18} />
                     </button>
                     <button 
-                      onClick={() => grinder.id && onDelete(grinder.id)}
+                      onClick={() => brewer.id && onDelete(brewer.id)}
                       className="p-2 text-red-500 hover:bg-red-50 rounded-full"
                     >
                       <Trash2 size={18} />
@@ -189,26 +178,28 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container">
-                    {grinder.type}
-                  </span>
-                </div>
+                {brewer.type && (
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container">
+                      {brewer.type}
+                    </span>
+                  </div>
+                )}
 
-                {grinder.notes && (
+                {brewer.notes && (
                   <div className="mt-4 flex gap-2 items-start opacity-70">
                     <Info size={14} className="mt-1 shrink-0" />
-                    <p className="text-sm italic">{grinder.notes}</p>
+                    <p className="text-sm italic">{brewer.notes}</p>
                   </div>
                 )}
               </motion.div>
             ))}
           </AnimatePresence>
           
-          {grinders.length === 0 && !showForm && (
+          {brewers.length === 0 && !showForm && (
             <div className="col-span-full py-12 text-center opacity-50">
-              <Hammer className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p>No grinders saved yet. Add one to track your settings!</p>
+              <Coffee className="w-12 h-12 mx-auto mb-4 opacity-20" />
+              <p>No brewers saved yet. Add one to track your gear!</p>
             </div>
           )}
         </motion.div>
@@ -218,4 +209,4 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
   );
 });
 
-export default GrinderTab;
+export default BrewerTab;

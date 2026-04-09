@@ -17,10 +17,11 @@ import {
   Settings,
   User as UserIcon,
   Hammer,
-  ChevronLeft
+  ChevronLeft,
+  Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrewLog, CoffeeBean, Grinder, Recipe, UserSettings, ColorScheme } from './types';
+import { BrewLog, CoffeeBean, Grinder, Brewer, Recipe, UserSettings, ColorScheme } from './types';
 import { 
   auth, 
   db, 
@@ -53,11 +54,11 @@ import RecipeTab from './components/RecipeTab';
 import RatioCalculator from './components/RatioCalculator';
 import TemperatureConverter from './components/TemperatureConverter';
 import CoffeeBeanTab from './components/CoffeeBeanTab';
-import GrinderTab from './components/GrinderTab';
+import ToolsTab from './components/ToolsTab';
 import FloatingActionButton from './components/FloatingActionButton';
 import CustomSelect from './components/CustomSelect';
 
-type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'grinders' | 'settings' | 'new-bean' | 'new-grinder' | 'new-recipe';
+type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'tools' | 'settings' | 'new-bean' | 'new-tool' | 'new-recipe';
 type SettingsSubTab = 'ratio' | 'temp' | 'preferences' | 'account';
 
 export default function App() {
@@ -67,6 +68,7 @@ export default function App() {
     logs: false,
     beans: false,
     grinders: false,
+    brewers: false,
     recipes: false,
     settings: false
   });
@@ -75,8 +77,8 @@ export default function App() {
 
   const navigateToTab = React.useCallback((newTab: Tab) => {
     setActiveTab(prev => {
-      const isNewTab = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(newTab);
-      const isCurrentTabNew = ['new', 'new-bean', 'new-grinder', 'new-recipe'].includes(prev);
+      const isNewTab = ['new', 'new-bean', 'new-tool', 'new-recipe'].includes(newTab);
+      const isCurrentTabNew = ['new', 'new-bean', 'new-tool', 'new-recipe'].includes(prev);
 
       if (isNewTab && !isCurrentTabNew) {
         setPreviousTab(prev);
@@ -88,6 +90,7 @@ export default function App() {
   const [logs, setLogs] = useState<BrewLog[]>([]);
   const [beans, setBeans] = useState<CoffeeBean[]>([]);
   const [grinders, setGrinders] = useState<Grinder[]>([]);
+  const [brewers, setBrewers] = useState<Brewer[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [settings, setSettings] = useState<UserSettings>({ 
     userId: '', 
@@ -100,8 +103,10 @@ export default function App() {
   const [editingLog, setEditingLog] = useState<BrewLog | null>(null);
   const [editingBean, setEditingBean] = useState<CoffeeBean | null>(null);
   const [editingGrinder, setEditingGrinder] = useState<Grinder | null>(null);
+  const [editingBrewer, setEditingBrewer] = useState<Brewer | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
+  const [toolsSubTab, setToolsSubTab] = useState<'grinders' | 'brewers'>('grinders');
   const [isNavVisible, setIsNavVisible] = useState(true);
   const lastScrollY = React.useRef(0);
 
@@ -133,7 +138,10 @@ export default function App() {
     }
     if (activeTab !== 'new') setEditingLog(null);
     if (activeTab !== 'new-bean') setEditingBean(null);
-    if (activeTab !== 'new-grinder') setEditingGrinder(null);
+    if (activeTab !== 'new-tool') {
+      setEditingGrinder(null);
+      setEditingBrewer(null);
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -190,6 +198,7 @@ export default function App() {
       setBeans([]);
       setRecipes([]);
       setGrinders([]);
+      setBrewers([]);
       return;
     }
 
@@ -248,6 +257,24 @@ export default function App() {
       setDataLoaded(prev => prev.grinders ? prev : { ...prev, grinders: true });
     });
 
+    // Brewers Subscription
+    const qBrewers = query(
+      collection(db, 'brewers'),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubBrewers = onSnapshot(qBrewers, (snapshot) => {
+      const newBrewers = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Brewer[];
+      setBrewers(newBrewers);
+      setDataLoaded(prev => prev.brewers ? prev : { ...prev, brewers: true });
+    }, (err) => {
+      handleFirestoreError(err, OperationType.LIST, 'brewers');
+      setDataLoaded(prev => prev.brewers ? prev : { ...prev, brewers: true });
+    });
+
     // Recipes Subscription
     const qRecipes = query(
       collection(db, 'recipes'),
@@ -270,6 +297,7 @@ export default function App() {
       unsubBrews();
       unsubBeans();
       unsubGrinders();
+      unsubBrewers();
       unsubRecipes();
     };
   }, [user?.uid]);
@@ -458,6 +486,31 @@ export default function App() {
     }
   }, []);
 
+  const saveBrewer = React.useCallback(async (brewer: Brewer) => {
+    if (!user) return;
+    try {
+      if (brewer.id) {
+        const { id, ...data } = brewer;
+        await updateDoc(doc(db, 'brewers', id), data);
+      } else {
+        await addDoc(collection(db, 'brewers'), {
+          ...brewer,
+          userId: user.uid
+        });
+      }
+    } catch (err) {
+      handleFirestoreError(err, brewer.id ? OperationType.UPDATE : OperationType.CREATE, 'brewers');
+    }
+  }, [user]);
+
+  const deleteBrewer = React.useCallback(async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'brewers', id));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, 'brewers');
+    }
+  }, []);
+
   const deleteRecipe = React.useCallback(async (id: string) => {
     try {
       await deleteDoc(doc(db, 'recipes', id));
@@ -555,34 +608,22 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface pb-[calc(6rem+env(safe-area-inset-bottom))]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-black/5 px-6 py-4 pt-[calc(1rem+env(safe-area-inset-top))] flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Coffee className="text-primary" size={28} />
-          <span className="text-2xl font-bold tracking-tight">Brewing</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <img 
-            src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
-            alt="Profile" 
-            className="w-10 h-10 rounded-full border-2 border-primary-container"
-            referrerPolicy="no-referrer"
-          />
-          <button onClick={handleLogout} className="p-2 hover:bg-black/5 rounded-full text-outline">
-            <LogOut size={20} />
-          </button>
-        </div>
-      </header>
-
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6 overflow-x-hidden">
+      <main className="max-w-4xl mx-auto p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] overflow-x-hidden">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0,
+              transitionEnd: { overflow: 'visible' }
+            }}
+            exit={{ 
+              opacity: 0, 
+              y: -10,
+              overflow: 'hidden'
+            }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="tab-content-wrapper overflow-hidden"
           >
@@ -636,30 +677,46 @@ export default function App() {
                 settings={settings}
               />
             )}
-            {activeTab === 'grinders' && (
-              <GrinderTab 
-                grinders={grinders} 
-                onSave={saveGrinder} 
-                onDelete={deleteGrinder} 
-                userId={user.uid} 
-                onEdit={(grinder) => {
+            {activeTab === 'tools' && (
+              <ToolsTab 
+                grinders={grinders}
+                brewers={brewers}
+                onSaveGrinder={saveGrinder}
+                onDeleteGrinder={deleteGrinder}
+                onSaveBrewer={saveBrewer}
+                onDeleteBrewer={deleteBrewer}
+                userId={user.uid}
+                initialSubTab={toolsSubTab}
+                onEditGrinder={(grinder) => {
                   setEditingGrinder(grinder);
-                  navigateToTab('new-grinder');
+                  setToolsSubTab('grinders');
+                  navigateToTab('new-tool');
+                }}
+                onEditBrewer={(brewer) => {
+                  setEditingBrewer(brewer);
+                  setToolsSubTab('brewers');
+                  navigateToTab('new-tool');
                 }}
               />
             )}
-            {activeTab === 'new-grinder' && (
-              <GrinderTab 
-                grinders={grinders} 
-                onSave={saveGrinder} 
-                onDelete={deleteGrinder} 
-                userId={user.uid} 
+            {activeTab === 'new-tool' && (
+              <ToolsTab 
+                grinders={grinders}
+                brewers={brewers}
+                onSaveGrinder={saveGrinder}
+                onDeleteGrinder={deleteGrinder}
+                onSaveBrewer={saveBrewer}
+                onDeleteBrewer={deleteBrewer}
+                userId={user.uid}
+                initialSubTab={toolsSubTab}
                 initialShowForm={true}
                 onFormClose={() => {
                   setEditingGrinder(null);
+                  setEditingBrewer(null);
                   setActiveTab(previousTab);
                 }}
                 editingGrinder={editingGrinder}
+                editingBrewer={editingBrewer}
               />
             )}
             {activeTab === 'new-recipe' && (
@@ -692,7 +749,14 @@ export default function App() {
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <div className="m3-card bg-primary-container/10 border-none">
+                <div className="flex items-center justify-between px-2">
+                  <div className="flex items-center gap-2">
+                    <Settings size={20} className="text-primary" />
+                    <h2 className="text-xl font-bold">Settings & Tools</h2>
+                  </div>
+                </div>
+
+                <div className="m3-card bg-primary-container/10 border-none relative z-20">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-primary-container rounded-xl">
                       <Settings className="text-on-primary-container" size={20} />
@@ -717,8 +781,16 @@ export default function App() {
                   <motion.div
                     key={settingsSubTab}
                     initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0,
+                      transitionEnd: { overflow: 'visible' }
+                    }}
+                    exit={{ 
+                      opacity: 0, 
+                      y: -10,
+                      overflow: 'hidden'
+                    }}
                     transition={{ duration: 0.2 }}
                   >
                     {settingsSubTab === 'ratio' && <RatioCalculator />}
@@ -808,13 +880,31 @@ export default function App() {
                     )}
                     {settingsSubTab === 'account' && (
                       <div className="m3-card bg-primary-container/20 border-none">
-                        <div className="flex items-center gap-3 mb-4">
-                          <UserIcon className="text-primary" size={20} />
-                          <h3 className="font-bold">Account Info</h3>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <UserIcon className="text-primary" size={20} />
+                            <h3 className="font-bold">Account Info</h3>
+                          </div>
+                          <img 
+                            src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
+                            alt="Profile" 
+                            className="w-10 h-10 rounded-full border-2 border-primary-container"
+                            referrerPolicy="no-referrer"
+                          />
                         </div>
-                        <div className="space-y-2 text-sm">
-                          <p><span className="opacity-60">Signed in as:</span> <span className="font-medium">{user.displayName}</span></p>
-                          <p><span className="opacity-60">Email:</span> <span className="font-medium">{user.email}</span></p>
+                        <div className="space-y-4 text-sm">
+                          <div className="space-y-1">
+                            <p><span className="opacity-60">Signed in as:</span> <span className="font-medium">{user.displayName}</span></p>
+                            <p><span className="opacity-60">Email:</span> <span className="font-medium">{user.email}</span></p>
+                          </div>
+                          
+                          <button 
+                            onClick={handleLogout}
+                            className="m3-button-outlined w-full py-3 justify-center text-red-500 border-red-200 hover:bg-red-50"
+                          >
+                            <LogOut size={18} />
+                            Sign Out
+                          </button>
                         </div>
                       </div>
                     )}
@@ -832,7 +922,7 @@ export default function App() {
           isNavVisible &&
           activeTab !== 'new' && 
           activeTab !== 'new-bean' && 
-          activeTab !== 'new-grinder' && 
+          activeTab !== 'new-tool' && 
           activeTab !== 'new-recipe' && 
           activeTab !== 'settings'
         }
@@ -843,7 +933,15 @@ export default function App() {
         }}
         onAddGrinder={() => {
           setEditingGrinder(null);
-          navigateToTab('new-grinder');
+          setEditingBrewer(null);
+          setToolsSubTab('grinders');
+          navigateToTab('new-tool');
+        }}
+        onAddBrewer={() => {
+          setEditingGrinder(null);
+          setEditingBrewer(null);
+          setToolsSubTab('brewers');
+          navigateToTab('new-tool');
         }}
         onAddRecipe={() => {
           navigateToTab('new-recipe');
@@ -870,10 +968,10 @@ export default function App() {
           label="Beans"
         />
         <NavButton 
-          active={activeTab === 'grinders'} 
-          onClick={() => navigateToTab('grinders')}
-          icon={<Hammer size={24} />}
-          label="Grinders"
+          active={activeTab === 'tools'} 
+          onClick={() => navigateToTab('tools')}
+          icon={<Wrench size={24} />}
+          label="Tools"
         />
         <NavButton 
           active={activeTab === 'recipes'} 

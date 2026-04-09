@@ -64,6 +64,15 @@ service cloud.firestore {
     //   - type: string (optional, enum: ["Manual", "Electric"])
     //   - notes: string (optional)
     //
+    // Collection: brewers
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required, immutable)
+    //   - name: string (required)
+    //   - brand: string (optional)
+    //   - type: string (optional)
+    //   - notes: string (optional)
+    //
     // Collection: settings
     // Document ID: auto-generated
     // Fields:
@@ -198,6 +207,17 @@ service cloud.firestore {
         (!('notes' in data) || (data.notes is string && data.notes.size() < 1000));
     }
 
+    function isValidBrewer(data) {
+      let allowedFields = ['userId', 'name', 'brand', 'type', 'notes'];
+      return hasRequiredFields(['userId', 'name']) &&
+        hasOnlyAllowedFields(allowedFields) &&
+        data.userId is string &&
+        data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+        (!('brand' in data) || (data.brand is string && data.brand.size() < 100)) &&
+        (!('type' in data) || (data.type is string && data.type.size() < 100)) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() < 1000));
+    }
+
     function isValidUserSettings(data) {
       let allowedFields = ['userId', 'tempUnit', 'theme', 'colorScheme', 'defaultGrinderId', 'lowStockThreshold', 'geminiApiKey'];
       return hasRequiredFields(['userId', 'tempUnit', 'theme', 'colorScheme']) &&
@@ -240,6 +260,13 @@ service cloud.firestore {
       allow read: if isDocOwner();
       allow create: if isOwner(request.resource.data.userId) && isValidGrinder(request.resource.data) && uidUnchanged();
       allow update: if isDocOwner() && isValidGrinder(request.resource.data) && uidNotModified();
+      allow delete: if isDocOwner();
+    }
+
+    match /brewers/{brewerId} {
+      allow read: if isDocOwner();
+      allow create: if isOwner(request.resource.data.userId) && isValidBrewer(request.resource.data) && uidUnchanged();
+      allow update: if isDocOwner() && isValidBrewer(request.resource.data) && uidNotModified();
       allow delete: if isDocOwner();
     }
 
