@@ -58,35 +58,35 @@ const ToolsTab = React.memo(({
               <Wrench size={20} className="text-primary" />
               <h2 className="text-xl font-bold">Coffee Gear</h2>
               <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
-                {grinders.length + brewers.length}
+                {activeSubTab === 'grinders' ? grinders.length : brewers.length}
               </span>
             </div>
           </div>
 
-          <div className="flex p-1 bg-surface-variant/30 rounded-2xl gap-1">
-          <button
-            onClick={() => setActiveSubTab('grinders')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
-              activeSubTab === 'grinders' 
-                ? 'bg-surface text-primary shadow-sm' 
-                : 'text-on-surface/60 hover:text-on-surface'
-            }`}
-          >
-            <Hammer size={18} />
-            Grinders
-          </button>
-          <button
-            onClick={() => setActiveSubTab('brewers')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
-              activeSubTab === 'brewers' 
-                ? 'bg-surface text-primary shadow-sm' 
-                : 'text-on-surface/60 hover:text-on-surface'
-            }`}
-          >
-            <Coffee size={18} />
-            Brewers
-          </button>
-        </div>
+          <div className="flex gap-2 p-1 bg-surface-variant rounded-2xl max-w-md mx-auto w-full">
+            <button
+              onClick={() => setActiveSubTab('grinders')}
+              className={`flex-1 flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                activeSubTab === 'grinders' 
+                  ? 'bg-primary text-on-primary shadow-md' 
+                  : 'text-on-surface hover:bg-black/5'
+              }`}
+            >
+              <Hammer size={18} />
+              Grinders
+            </button>
+            <button
+              onClick={() => setActiveSubTab('brewers')}
+              className={`flex-1 flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                activeSubTab === 'brewers' 
+                  ? 'bg-primary text-on-primary shadow-md' 
+                  : 'text-on-surface hover:bg-black/5'
+              }`}
+            >
+              <Coffee size={18} />
+              Brewers
+            </button>
+          </div>
       </div>
       )}
 

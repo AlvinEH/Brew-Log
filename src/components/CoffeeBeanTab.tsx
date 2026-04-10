@@ -322,7 +322,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
               <Bean size={20} className="text-primary" />
               <h2 className="text-xl font-bold">Coffee Beans</h2>
               <span className="text-xs font-bold bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full">
-                {beans.length}
+                {filteredBeans.length}
               </span>
             </div>
             <button 
