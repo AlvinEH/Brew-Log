@@ -90,7 +90,7 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-20"
+            className="space-y-10 max-w-2xl mx-auto pb-10"
           >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
@@ -122,7 +122,7 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
                       key={t}
                       type="button"
                       onClick={() => setType(t)}
-                      className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${type === t ? 'bg-primary text-on-primary shadow-lg scale-105' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
+                      className={`flex-1 py-3 rounded-xl font-bold text-base transition-all ${type === t ? 'bg-primary text-on-primary shadow-md' : 'bg-surface-variant/50 text-on-surface hover:bg-surface-variant'}`}
                     >
                       {t}
                     </button>
@@ -141,8 +141,8 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
               </div>
 
               <div className="flex gap-4">
-                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center">Cancel</button>
-                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-4 text-lg shadow-lg justify-center">
+                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-3 text-base shadow-sm justify-center">Cancel</button>
+                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-3 text-base shadow-lg justify-center">
                   {saving ? <Loader2 className="animate-spin" size={24} /> : (editingId ? 'Update Grinder' : 'Save Grinder')}
                 </button>
               </div>
@@ -207,7 +207,6 @@ const GrinderTab = React.memo(({ grinders, onSave, onDelete, userId, initialShow
           
           {grinders.length === 0 && !showForm && (
             <div className="col-span-full py-12 text-center opacity-50">
-              <Hammer className="w-12 h-12 mx-auto mb-4 opacity-20" />
               <p>No grinders saved yet. Add one to track your settings!</p>
             </div>
           )}

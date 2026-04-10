@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Coffee, Bean, Hammer, Sparkles } from 'lucide-react';
+import { Plus, FlaskConical, Bean, Hammer, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface Props {
@@ -61,7 +61,7 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
                       New Brew
                     </span>
                     <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
-                      <Coffee size={24} />
+                      <FlaskConical size={24} />
                     </div>
                   </motion.button>
 
@@ -109,7 +109,7 @@ export default function FloatingActionButton({ onAddBrew, onAddBean, onAddGrinde
                       New Brewer
                     </span>
                     <div className="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
-                      <Coffee size={24} />
+                      <FlaskConical size={24} />
                     </div>
                   </motion.button>
 

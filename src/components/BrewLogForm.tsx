@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Coffee, Save, Plus, Trash2, ChevronDown, Loader2, Sparkles } from 'lucide-react';
+import { FlaskConical, Save, Plus, Trash2, ChevronDown, Loader2, Sparkles, Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrewLog, BrewTiming, CoffeeBean, Grinder, Recipe } from '../types';
+import { BrewLog, BrewTiming, CoffeeBean, Grinder, Brewer, Recipe } from '../types';
 import { Timestamp } from 'firebase/firestore';
 
 interface Props {
@@ -9,15 +9,17 @@ interface Props {
   userId: string;
   savedBeans: CoffeeBean[];
   savedGrinders: Grinder[];
+  savedBrewers: Brewer[];
   savedRecipes: Recipe[];
   tempUnit: 'C' | 'F';
   defaultGrinderId?: string;
+  defaultBrewerId?: string;
   initialData?: BrewLog | null;
   onCancel?: () => void;
   onSaveAsRecipe?: (logData: Partial<BrewLog>) => void;
 }
 
-const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, savedRecipes, tempUnit, defaultGrinderId, initialData, onCancel, onSaveAsRecipe }: Props) => {
+const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, savedBrewers, savedRecipes, tempUnit, defaultGrinderId, defaultBrewerId, initialData, onCancel, onSaveAsRecipe }: Props) => {
   const [beanName, setBeanName] = useState(initialData?.beanName || '');
   const [beanId, setBeanId] = useState(initialData?.beanId || '');
   const [roaster, setRoaster] = useState(initialData?.roaster || '');
@@ -29,6 +31,14 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
     return '';
   }));
   const [grindSize, setGrindSize] = useState(initialData?.grindSize || '');
+  const [brewer, setBrewer] = useState(initialData?.brewer || (() => {
+    if (defaultBrewerId) {
+      const b = savedBrewers.find(b => b.id === defaultBrewerId);
+      return b ? b.name : '';
+    }
+    return '';
+  }));
+  const [brewerId, setBrewerId] = useState(initialData?.brewerId || '');
   const [recipeId, setRecipeId] = useState(initialData?.recipeId || '');
   const [coffeeWeight, setCoffeeWeight] = useState(initialData?.coffeeWeight.toString() || '15');
   const [waterWeight, setWaterWeight] = useState(initialData?.waterWeight.toString() || '225');
@@ -38,6 +48,7 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
   const [timings, setTimings] = useState<BrewTiming[]>(initialData?.timings || []);
   const [showBeanSelector, setShowBeanSelector] = useState(false);
   const [showGrinderSelector, setShowGrinderSelector] = useState(false);
+  const [showBrewerSelector, setShowBrewerSelector] = useState(false);
   const [showRecipeSelector, setShowRecipeSelector] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -45,8 +56,10 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
     if (initialData) {
       setBeanName(initialData.beanName);
       setRoaster(initialData.roaster);
-      setGrinder(initialData.grinder);
+      setGrinder(initialData.grinder || '');
       setGrindSize(initialData.grindSize || '');
+      setBrewer(initialData.brewer || '');
+      setBrewerId(initialData.brewerId || '');
       setRecipeId(initialData.recipeId || '');
       setCoffeeWeight(initialData.coffeeWeight.toString());
       setWaterWeight(initialData.waterWeight.toString());
@@ -59,6 +72,8 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
       setRoaster('');
       setGrinder(defaultGrinderId ? (savedGrinders.find(g => g.id === defaultGrinderId)?.name || '') : '');
       setGrindSize('');
+      setBrewer(defaultBrewerId ? (savedBrewers.find(b => b.id === defaultBrewerId)?.name || '') : '');
+      setBrewerId(defaultBrewerId || '');
       setRecipeId('');
       setCoffeeWeight('15');
       setWaterWeight('225');
@@ -82,6 +97,12 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
   const selectSavedGrinder = (g: Grinder) => {
     setGrinder(g.name);
     setShowGrinderSelector(false);
+  };
+
+  const selectSavedBrewer = (b: Brewer) => {
+    setBrewer(b.name);
+    setBrewerId(b.id || '');
+    setShowBrewerSelector(false);
   };
 
   const selectSavedRecipe = (r: Recipe) => {
@@ -202,6 +223,8 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
       if (roaster?.trim()) log.roaster = roaster.trim();
       if (grinder?.trim()) log.grinder = grinder.trim();
       if (grindSize?.trim()) log.grindSize = grindSize.trim();
+      if (brewer?.trim()) log.brewer = brewer.trim();
+      if (brewerId?.trim()) log.brewerId = brewerId.trim();
       if (recipeId?.trim()) log.recipeId = recipeId.trim();
       if (finalTemp?.trim()) log.waterTemp = finalTemp.trim();
       if (notes?.trim()) log.notes = notes.trim();
@@ -253,14 +276,14 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
       initial={false}
       animate={{ opacity: 1 }}
       onSubmit={handleSubmit}
-      className="space-y-10 max-w-2xl mx-auto pb-20"
+      className="space-y-10 max-w-2xl mx-auto pb-10"
     >
       <div className="pb-8 border-b border-black/5">
         <div className="flex items-center gap-3 mb-8">
           <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
-            <Coffee className="text-on-primary-container" size={24} />
+            <FlaskConical className="text-on-primary-container" size={24} />
           </div>
-          <h2 className="text-3xl font-bold tracking-tight">New Brew Log</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{initialData ? 'Edit Brew Log' : 'New Brew Log'}</h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -318,8 +341,7 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
                   onClick={() => savedRecipes.length > 0 && setShowRecipeSelector(!showRecipeSelector)}
                   className={`m3-input flex-1 w-0 h-12 bg-surface-variant/30 flex items-center px-4 overflow-hidden ${savedRecipes.length > 0 ? 'cursor-pointer hover:bg-surface-variant/50' : ''}`}
                 >
-                  <Sparkles size={16} className="mr-2 text-primary shrink-0" />
-                  <span className="truncate opacity-70 flex-1 min-w-0">
+                  <span className={`truncate flex-1 min-w-0 ${recipeId ? 'text-on-surface' : 'opacity-50'}`}>
                     {recipeId ? savedRecipes.find(r => r.id === recipeId)?.title : 'Link a saved recipe...'}
                   </span>
                 </div>
@@ -362,6 +384,48 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
                       >
                         <p className="font-bold text-sm">{r.title}</p>
                         <p className="text-xs opacity-70">{r.source}</p>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="relative">
+              <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Brewer</label>
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <input value={brewer} onChange={e => setBrewer(e.target.value)} className="m3-input h-12" placeholder="e.g. Hario V60" />
+                </div>
+                {savedBrewers.length > 0 && (
+                  <button 
+                    type="button" 
+                    onClick={() => setShowBrewerSelector(!showBrewerSelector)}
+                    className="flex items-center justify-center bg-primary-container text-on-primary-container w-12 h-12 rounded-xl shrink-0 hover:bg-primary-container/80 transition-colors"
+                    title="Select saved brewer"
+                  >
+                    <ChevronDown size={20} />
+                  </button>
+                )}
+              </div>
+              
+              <AnimatePresence initial={false}>
+                {showBrewerSelector && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute z-10 top-full left-0 right-0 mt-2 bg-surface border border-black/5 rounded-2xl shadow-xl max-h-48 overflow-y-auto p-2"
+                  >
+                    {savedBrewers.map(b => (
+                      <button 
+                        key={b.id} 
+                        type="button"
+                        onClick={() => selectSavedBrewer(b)}
+                        className="w-full text-left p-3 hover:bg-primary-container rounded-xl transition-colors"
+                      >
+                        <p className="font-bold text-sm">{b.name}</p>
+                        <p className="text-xs opacity-70">{b.brand}</p>
                       </button>
                     ))}
                   </motion.div>
@@ -509,13 +573,13 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
         <div className="space-y-6">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider opacity-50 mb-1 ml-1">Rating (1-5)</label>
-            <div className="flex gap-4">
+            <div className="flex gap-2 sm:gap-3 w-full">
               {[1, 2, 3, 4, 5].map(r => (
                 <button 
                   key={r} 
                   type="button"
                   onClick={() => setRating(r)}
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all font-bold text-lg ${rating === r ? 'bg-primary text-white shadow-md scale-105' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+                  className={`flex-1 aspect-square sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all font-bold text-base ${rating === r ? 'bg-primary text-white shadow-md' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
                 >
                   {r}
                 </button>
@@ -534,15 +598,15 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
           <button 
             type="button" 
             onClick={onCancel}
-            className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center"
+            className="m3-button-outlined flex-1 py-3 text-base shadow-sm justify-center"
           >
             Cancel
           </button>
         )}
-        <button type="submit" disabled={saving} className={`m3-button-primary ${onCancel ? 'flex-[2]' : 'w-full'} py-4 text-lg shadow-lg justify-center`}>
+        <button type="submit" disabled={saving} className={`m3-button-primary ${onCancel ? 'flex-[2]' : 'w-full'} py-3 text-base shadow-lg justify-center`}>
           {saving ? <Loader2 className="animate-spin" size={24} /> : (
             <>
-              <Save size={24} /> {initialData ? 'Update' : 'Save Brew Log'}
+              {initialData ? 'Update Log' : 'Save Log'}
             </>
           )}
         </button>

@@ -15,6 +15,8 @@ export interface BrewLog {
   roaster?: string;
   grinder?: string;
   grindSize?: string;
+  brewer?: string;
+  brewerId?: string;
   recipeId?: string;
   coffeeWeight: number;
   waterWeight: number;
@@ -79,6 +81,7 @@ export interface UserSettings {
   userId: string;
   tempUnit: 'C' | 'F';
   defaultGrinderId?: string;
+  defaultBrewerId?: string;
   theme: 'light' | 'dark' | 'system';
   colorScheme: ColorScheme;
   lowStockThreshold: number;

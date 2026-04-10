@@ -398,7 +398,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-20"
+            className="space-y-10 max-w-2xl mx-auto pb-10"
           >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
@@ -515,9 +515,9 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
                           key={star}
                           type="button"
                           onClick={() => setRating(star)}
-                          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${rating >= star ? 'bg-primary text-white shadow-md scale-105' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${rating >= star ? 'bg-primary text-white shadow-md' : 'bg-surface-variant/50 text-outline hover:bg-surface-variant'}`}
                         >
-                          <Star size={24} fill={rating >= star ? 'currentColor' : 'none'} />
+                          <Star size={20} fill={rating >= star ? 'currentColor' : 'none'} />
                         </button>
                       ))}
                     </div>
@@ -536,8 +536,8 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
               </div>
 
               <div className="flex gap-4">
-                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center">Cancel</button>
-                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-4 text-lg shadow-lg justify-center">
+                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-3 text-base shadow-sm justify-center">Cancel</button>
+                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-3 text-base shadow-lg justify-center">
                   {saving ? <Loader2 className="animate-spin" size={24} /> : (editingId ? 'Update Bean' : 'Save Bean')}
                 </button>
               </div>

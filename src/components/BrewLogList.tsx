@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Star, Trash2, ChevronRight, Droplets, Bean, Coffee, Sparkles, Filter, X, History, Scale, Thermometer, Pencil, Hammer } from 'lucide-react';
+import { Calendar, Star, Trash2, ChevronRight, Droplets, Bean, FlaskConical, Sparkles, Filter, X, History, Scale, Thermometer, Pencil, Hammer, Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrewLog, Recipe, CoffeeBean } from '../types';
 import CustomSelect from './CustomSelect';
@@ -60,7 +60,7 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
   if (logs.length === 0) {
     return (
       <div className="text-center py-20 opacity-50">
-        <Coffee size={64} className="mx-auto mb-4" />
+        <FlaskConical size={64} className="mx-auto mb-4" />
         <p className="text-xl">No brew logs yet. Start your first brew!</p>
       </div>
     );
@@ -184,12 +184,20 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
                     <h3 className="text-xl font-bold mb-1 truncate">{log.beanName}</h3>
                     <p className="text-sm opacity-70 mb-3 truncate">{log.roaster || 'Unknown Roaster'}</p>
                     
-                    {log.recipeId && (
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-primary mb-3 bg-primary-container/30 w-fit px-2 py-1 rounded-lg">
-                        <Sparkles size={12} />
-                        <span>{savedRecipes.find(r => r.id === log.recipeId)?.title || 'Linked Recipe'}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {log.recipeId && (
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary-container/30 w-fit px-2 py-1 rounded-lg">
+                          <Sparkles size={12} />
+                          <span>{savedRecipes.find(r => r.id === log.recipeId)?.title || 'Linked Recipe'}</span>
+                        </div>
+                      )}
+                      {log.brewer && (
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary-container/30 w-fit px-2 py-1 rounded-lg">
+                          <FlaskConical size={12} />
+                          <span>{log.brewer}</span>
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm items-center">
                       <div className="flex items-center gap-4">

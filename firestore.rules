@@ -140,7 +140,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidBrewLog(data) {
-      let allowedFields = ['userId', 'date', 'beanName', 'beanId', 'roaster', 'grinder', 'grindSize', 'recipeId', 'coffeeWeight', 'waterWeight', 'ratio', 'waterTemp', 'timings', 'notes', 'rating'];
+      let allowedFields = ['userId', 'date', 'beanName', 'beanId', 'roaster', 'grinder', 'grindSize', 'brewer', 'brewerId', 'recipeId', 'coffeeWeight', 'waterWeight', 'ratio', 'waterTemp', 'timings', 'notes', 'rating'];
       return hasRequiredFields(['userId', 'date', 'beanName', 'coffeeWeight', 'waterWeight']) &&
         hasOnlyAllowedFields(allowedFields) &&
         data.userId is string &&
@@ -152,6 +152,8 @@ service cloud.firestore {
         (!('roaster' in data) || (data.roaster is string && data.roaster.size() < 100)) &&
         (!('grinder' in data) || (data.grinder is string && data.grinder.size() < 100)) &&
         (!('grindSize' in data) || (data.grindSize is string && data.grindSize.size() < 50)) &&
+        (!('brewer' in data) || (data.brewer is string && data.brewer.size() < 100)) &&
+        (!('brewerId' in data) || (data.brewerId is string && data.brewerId.size() < 100)) &&
         (!('recipeId' in data) || (data.recipeId is string && data.recipeId.size() < 100)) &&
         (!('ratio' in data) || (data.ratio is string && data.ratio.size() < 20)) &&
         (!('waterTemp' in data) || (data.waterTemp is string && data.waterTemp.size() < 20)) &&
@@ -219,7 +221,7 @@ service cloud.firestore {
     }
 
     function isValidUserSettings(data) {
-      let allowedFields = ['userId', 'tempUnit', 'theme', 'colorScheme', 'defaultGrinderId', 'lowStockThreshold', 'geminiApiKey'];
+      let allowedFields = ['userId', 'tempUnit', 'theme', 'colorScheme', 'defaultGrinderId', 'defaultBrewerId', 'lowStockThreshold', 'geminiApiKey'];
       return hasRequiredFields(['userId', 'tempUnit', 'theme', 'colorScheme']) &&
         hasOnlyAllowedFields(allowedFields) &&
         data.userId is string &&
@@ -227,6 +229,7 @@ service cloud.firestore {
         data.theme in ['light', 'dark', 'system'] &&
         data.colorScheme in ['default', 'catppuccin', 'rose-pine', 'gruvbox', 'everforest'] &&
         (!('defaultGrinderId' in data) || (data.defaultGrinderId is string && data.defaultGrinderId.size() < 100)) &&
+        (!('defaultBrewerId' in data) || (data.defaultBrewerId is string && data.defaultBrewerId.size() < 100)) &&
         (!('lowStockThreshold' in data) || (data.lowStockThreshold is number && data.lowStockThreshold >= 0)) &&
         (!('geminiApiKey' in data) || (data.geminiApiKey is string && data.geminiApiKey.size() < 200));
     }

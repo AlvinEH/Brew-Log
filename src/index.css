@@ -14,6 +14,11 @@
   --color-on-secondary: var(--color-on-secondary);
   --color-secondary-container: var(--color-secondary-container);
   --color-on-secondary-container: var(--color-on-secondary-container);
+
+  --color-tertiary: var(--color-tertiary);
+  --color-on-tertiary: var(--color-on-tertiary);
+  --color-tertiary-container: var(--color-tertiary-container);
+  --color-on-tertiary-container: var(--color-on-tertiary-container);
   
   --color-surface: var(--color-surface);
   --color-on-surface: var(--color-on-surface);
@@ -39,6 +44,11 @@
   --color-on-secondary: #FFFFFF;
   --color-secondary-container: #D7CCC8;
   --color-on-secondary-container: #212121;
+
+  --color-tertiary: #4F6630;
+  --color-on-tertiary: #FFFFFF;
+  --color-tertiary-container: #D0EBB0;
+  --color-on-tertiary-container: #111F00;
   
   --color-surface: #FFFBFE;
   --color-on-surface: #1C1B1F;
@@ -63,6 +73,12 @@
   --color-on-secondary: #212121;
   --color-secondary-container: #4E342E;
   --color-on-secondary-container: #D7CCC8;
+
+  --color-tertiary: #B4CF96;
+  --color-on-tertiary: #223606;
+  --color-tertiary-container: #384E1B;
+  --color-on-tertiary-container: #D0EBB0;
+
   --color-surface: #1C1B1F;
   --color-on-surface: #E6E1E5;
   --color-surface-variant: #49454F;
@@ -84,6 +100,12 @@
   --color-on-secondary: #11111b;
   --color-secondary-container: #585b70;
   --color-on-secondary-container: #89b4fa;
+
+  --color-tertiary: #f5e0dc; /* Flamingo */
+  --color-on-tertiary: #11111b;
+  --color-tertiary-container: #45475a;
+  --color-on-tertiary-container: #f5e0dc;
+
   --color-surface: #1e1e2e;
   --color-on-surface: #cdd6f4;
   --color-surface-variant: #313244;
@@ -101,6 +123,12 @@
   --color-on-secondary: #eff1f5;
   --color-secondary-container: #e6e9ef;
   --color-on-secondary-container: #1e66f5;
+
+  --color-tertiary: #dd7878; /* Flamingo */
+  --color-on-tertiary: #eff1f5;
+  --color-tertiary-container: #dce0e8;
+  --color-on-tertiary-container: #dd7878;
+
   --color-surface: #eff1f5;
   --color-on-surface: #4c4f69;
   --color-surface-variant: #e6e9ef;
@@ -118,6 +146,12 @@
   --color-on-secondary: #191724;
   --color-secondary-container: #524f67;
   --color-on-secondary-container: #f6c177;
+
+  --color-tertiary: #9ccfd8; /* Iris */
+  --color-on-tertiary: #191724;
+  --color-tertiary-container: #403d52;
+  --color-on-tertiary-container: #9ccfd8;
+
   --color-surface: #191724;
   --color-on-surface: #e0def4;
   --color-surface-variant: #26233a;
@@ -134,6 +168,12 @@
   --color-on-secondary: #faf4ed;
   --color-secondary-container: #f2e9e1;
   --color-on-secondary-container: #ea9d34;
+
+  --color-tertiary: #907aa9; /* Iris */
+  --color-on-tertiary: #faf4ed;
+  --color-tertiary-container: #e8e1d9;
+  --color-on-tertiary-container: #907aa9;
+
   --color-surface: #faf4ed;
   --color-on-surface: #575279;
   --color-surface-variant: #f2e9e1;
@@ -151,6 +191,12 @@
   --color-on-secondary: #282828;
   --color-secondary-container: #665c54;
   --color-on-secondary-container: #8ec07c;
+
+  --color-tertiary: #d3869b; /* Purple */
+  --color-on-tertiary: #282828;
+  --color-tertiary-container: #504945;
+  --color-on-tertiary-container: #d3869b;
+
   --color-surface: #282828;
   --color-on-surface: #ebdbb2;
   --color-surface-variant: #3c3836;
@@ -167,6 +213,12 @@
   --color-on-secondary: #fbf1c7;
   --color-secondary-container: #ebdbb2;
   --color-on-secondary-container: #427b58;
+
+  --color-tertiary: #8f3f71; /* Purple */
+  --color-on-tertiary: #fbf1c7;
+  --color-tertiary-container: #d5c4a1;
+  --color-on-tertiary-container: #8f3f71;
+
   --color-surface: #fbf1c7;
   --color-on-surface: #3c3836;
   --color-surface-variant: #ebdbb2;
@@ -184,6 +236,12 @@
   --color-on-secondary: #2d353b;
   --color-secondary-container: #56635f;
   --color-on-secondary-container: #dbbc7f;
+
+  --color-tertiary: #e67e80; /* Red */
+  --color-on-tertiary: #2d353b;
+  --color-tertiary-container: #475258;
+  --color-on-tertiary-container: #e67e80;
+
   --color-surface: #2d353b;
   --color-on-surface: #d3c6aa;
   --color-surface-variant: #3d484d;
@@ -200,6 +258,12 @@
   --color-on-secondary: #fdf6e3;
   --color-secondary-container: #f0ebce;
   --color-on-secondary-container: #b58900;
+
+  --color-tertiary: #e67e80; /* Red */
+  --color-on-tertiary: #fdf6e3;
+  --color-tertiary-container: #e5dfc5;
+  --color-on-tertiary-container: #e67e80;
+
   --color-surface: #fdf6e3;
   --color-on-surface: #5c6a72;
   --color-surface-variant: #f0ebce;

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Coffee, 
+  FlaskConical, 
   Plus, 
   History, 
   Sparkles, 
@@ -107,7 +107,7 @@ export default function App() {
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
   const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
   const [toolsSubTab, setToolsSubTab] = useState<'grinders' | 'brewers'>('grinders');
-  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollY = React.useRef(0);
 
   useEffect(() => {
@@ -117,12 +117,12 @@ export default function App() {
       // Only hide on mobile/small screens
       if (window.innerWidth < 768) {
         if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
-          setIsNavVisible(prev => prev ? false : prev);
+          setIsFabVisible(prev => prev ? false : prev);
         } else {
-          setIsNavVisible(prev => !prev ? true : prev);
+          setIsFabVisible(prev => !prev ? true : prev);
         }
       } else {
-        setIsNavVisible(prev => !prev ? true : prev);
+        setIsFabVisible(prev => !prev ? true : prev);
       }
       
       lastScrollY.current = currentScrollY;
@@ -391,6 +391,8 @@ export default function App() {
       if (log.roaster && log.roaster.trim()) cleanedLog.roaster = log.roaster.trim();
       if (log.grinder && log.grinder.trim()) cleanedLog.grinder = log.grinder.trim();
       if (log.grindSize && log.grindSize.trim()) cleanedLog.grindSize = log.grindSize.trim();
+      if (log.brewer && log.brewer.trim()) cleanedLog.brewer = log.brewer.trim();
+      if (log.brewerId && log.brewerId.trim()) cleanedLog.brewerId = log.brewerId.trim();
       if (log.recipeId && log.recipeId.trim()) cleanedLog.recipeId = log.recipeId.trim();
       if (log.ratio && log.ratio.trim()) cleanedLog.ratio = log.ratio.trim();
       if (log.waterTemp && log.waterTemp.trim()) cleanedLog.waterTemp = log.waterTemp.trim();
@@ -589,7 +591,7 @@ export default function App() {
           className="text-center max-w-sm"
         >
           <div className="w-24 h-24 bg-primary-container rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
-            <Coffee className="text-on-primary-container" size={48} />
+            <FlaskConical className="text-on-primary-container" size={48} />
           </div>
           <h1 className="text-4xl font-bold mb-4 tracking-tight">Brewing</h1>
           <p className="text-lg opacity-70 mb-10">Track your daily pourover journey with precision and style.</p>
@@ -636,9 +638,11 @@ export default function App() {
                 userId={user.uid} 
                 savedBeans={beans.filter(b => !b.isArchived)} 
                 savedGrinders={grinders} 
+                savedBrewers={brewers}
                 savedRecipes={recipes.filter(r => r.isSaved)}
                 tempUnit={settings.tempUnit}
                 defaultGrinderId={settings.defaultGrinderId}
+                defaultBrewerId={settings.defaultBrewerId}
                 initialData={editingLog}
                 onCancel={() => {
                   setEditingLog(null);
@@ -839,13 +843,23 @@ export default function App() {
                             ]}
                           />
 
-                          <CustomSelect
+                            <CustomSelect
                             label="Default Grinder"
                             value={settings.defaultGrinderId || ''}
                             onChange={(val) => updateSettings({ defaultGrinderId: val || undefined })}
                             options={[
                               { value: '', label: 'None' },
                               ...grinders.map(g => ({ value: g.id || '', label: g.name }))
+                            ]}
+                          />
+
+                          <CustomSelect
+                            label="Default Brewer"
+                            value={settings.defaultBrewerId || ''}
+                            onChange={(val) => updateSettings({ defaultBrewerId: val || undefined })}
+                            options={[
+                              { value: '', label: 'None' },
+                              ...brewers.map(b => ({ value: b.id || '', label: b.name }))
                             ]}
                           />
 
@@ -919,7 +933,7 @@ export default function App() {
       {/* Floating Action Button */}
       <FloatingActionButton 
         visible={
-          isNavVisible &&
+          isFabVisible &&
           activeTab !== 'new' && 
           activeTab !== 'new-bean' && 
           activeTab !== 'new-tool' && 
@@ -951,7 +965,7 @@ export default function App() {
       {/* Bottom Navigation */}
       <motion.nav 
         initial={false}
-        animate={{ y: isNavVisible ? 0 : '100%' }}
+        animate={{ y: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="fixed bottom-0 left-0 right-0 bg-surface-variant border-t border-black/5 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex justify-around items-center shadow-2xl z-50 select-none"
       >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Loader2, Info, Coffee } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, Info, FlaskConical } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Brewer } from '../types';
 
@@ -90,11 +90,11 @@ const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowFo
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-20"
+            className="space-y-10 max-w-2xl mx-auto pb-10"
           >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
-                <Coffee className="text-on-primary-container" size={24} />
+                <FlaskConical className="text-on-primary-container" size={24} />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">{editingId ? 'Edit Brewer' : 'New Brewer'}</h2>
             </div>
@@ -130,8 +130,8 @@ const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowFo
               </div>
 
               <div className="flex gap-4">
-                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-4 text-lg shadow-sm justify-center">Cancel</button>
-                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-4 text-lg shadow-lg justify-center">
+                <button type="button" onClick={resetForm} className="m3-button-outlined flex-1 py-3 text-base shadow-sm justify-center">Cancel</button>
+                <button type="submit" disabled={saving} className="m3-button-primary flex-[2] py-3 text-base shadow-lg justify-center">
                   {saving ? <Loader2 className="animate-spin" size={24} /> : (editingId ? 'Update Brewer' : 'Save Brewer')}
                 </button>
               </div>
@@ -198,7 +198,6 @@ const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowFo
           
           {brewers.length === 0 && !showForm && (
             <div className="col-span-full py-12 text-center opacity-50">
-              <Coffee className="w-12 h-12 mx-auto mb-4 opacity-20" />
               <p>No brewers saved yet. Add one to track your gear!</p>
             </div>
           )}

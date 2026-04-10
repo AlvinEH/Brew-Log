@@ -63,7 +63,7 @@ const RecipeTab = React.memo(({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-20"
+            className="space-y-10 max-w-2xl mx-auto pb-10"
           >
             <div className="flex items-center gap-3 mb-8">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">

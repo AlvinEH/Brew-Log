@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Hammer, Coffee, Wrench } from 'lucide-react';
+import { Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import GrinderTab from './GrinderTab';
 import BrewerTab from './BrewerTab';
@@ -72,7 +72,6 @@ const ToolsTab = React.memo(({
                   : 'text-on-surface hover:bg-black/5'
               }`}
             >
-              <Hammer size={18} />
               Grinders
             </button>
             <button
@@ -83,7 +82,6 @@ const ToolsTab = React.memo(({
                   : 'text-on-surface hover:bg-black/5'
               }`}
             >
-              <Coffee size={18} />
               Brewers
             </button>
           </div>
