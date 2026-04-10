@@ -398,16 +398,16 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-10"
+            className="space-y-5 max-w-2xl mx-auto pb-0"
           >
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
                 <Bean className="text-on-primary-container" size={24} />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">{editingId ? 'Edit Bean' : 'New Coffee Bean'}</h2>
             </div>
 
-            <div className="pb-8 border-b border-black/5">
+            <div className="pb-6 border-b border-black/5">
               <h3 className="text-xl font-bold mb-6">Import Details</h3>
               <div className="space-y-4">
                 <p className="text-sm opacity-70">Import details from a roaster's website or add manually.</p>
@@ -441,8 +441,8 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10">
-              <div className="pb-8 border-b border-black/5">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Basic Info</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -494,7 +494,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
                 </div>
               </div>
               
-              <div className="pb-8 border-b border-black/5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Flavor & Rating</h3>
                 <div className="space-y-6">
                   <div>
@@ -525,7 +525,7 @@ const CoffeeBeanTab = React.memo(({ beans, logs, onSave, onDelete, userId, initi
                 </div>
               </div>
 
-              <div className="pb-8 border-b border-black/5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Notes</h3>
                 <textarea 
                   placeholder="Any extra details about these beans..." 

@@ -104,8 +104,8 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-10">
-        <div className="pb-8 border-b border-black/5">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="pb-6 border-b border-black/5">
           <h3 className="text-xl font-bold mb-6">Basic Info</h3>
           <div className="grid gap-6 md:grid-cols-2">
             <div>
@@ -119,12 +119,12 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
           </div>
         </div>
 
-        <div className="pb-8 border-b border-black/5">
+        <div className="pb-6 border-b border-black/5">
           <h3 className="text-xl font-bold mb-6">Description</h3>
           <textarea value={description} onChange={e => setDescription(e.target.value)} className="m3-input min-h-[80px]" placeholder="Brief notes about this recipe..." />
         </div>
 
-        <div className="pb-8 border-b border-black/5">
+        <div className="pb-6 border-b border-black/5">
           <h3 className="text-xl font-bold mb-6">Ratio & Weights</h3>
           <div className="grid gap-6 md:grid-cols-3">
             <div>
@@ -142,7 +142,7 @@ export default function RecipeForm({ onSave, onCancel, initialData }: Props) {
           </div>
         </div>
 
-        <div className="pb-8 border-b border-black/5">
+        <div className="pb-6 border-b border-black/5">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold">Brew Steps & Timings</h3>
             <button type="button" onClick={addTiming} className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-1">

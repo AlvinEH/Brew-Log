@@ -276,10 +276,10 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
       initial={false}
       animate={{ opacity: 1 }}
       onSubmit={handleSubmit}
-      className="space-y-10 max-w-2xl mx-auto pb-10"
+      className="space-y-5 max-w-2xl mx-auto pb-0"
     >
-      <div className="pb-8 border-b border-black/5">
-        <div className="flex items-center gap-3 mb-8">
+      <div className="pb-6 border-b border-black/5">
+        <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
             <FlaskConical className="text-on-primary-container" size={24} />
           </div>
@@ -480,7 +480,7 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
         </div>
       </div>
 
-      <div className="pb-8 border-b border-black/5">
+      <div className="pb-6 border-b border-black/5">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Measurements</h3>
           <button 
@@ -527,7 +527,7 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
         </p>
       </div>
 
-      <div className="pb-8 border-b border-black/5">
+      <div className="pb-6 border-b border-black/5">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Brew Timings</h3>
           <button type="button" onClick={addTiming} className="m3-button-tonal py-1.5 px-4 text-sm">
@@ -568,7 +568,7 @@ const BrewLogForm = React.memo(({ onSave, userId, savedBeans, savedGrinders, sav
         </div>
       </div>
 
-      <div className="pb-8 border-b border-black/5">
+      <div className="pb-6 border-b border-black/5">
         <h3 className="text-xl font-bold mb-6">Final Thoughts</h3>
         <div className="space-y-6">
           <div>

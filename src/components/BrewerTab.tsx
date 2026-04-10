@@ -90,17 +90,17 @@ const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowFo
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="space-y-10 max-w-2xl mx-auto pb-10"
+            className="space-y-5 max-w-2xl mx-auto pb-0"
           >
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-primary-container rounded-2xl shadow-sm">
                 <FlaskConical className="text-on-primary-container" size={24} />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">{editingId ? 'Edit Brewer' : 'New Brewer'}</h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10">
-              <div className="pb-8 border-b border-black/5">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Brewer Details</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -114,12 +114,12 @@ const BrewerTab = React.memo(({ brewers, onSave, onDelete, userId, initialShowFo
                 </div>
               </div>
               
-              <div className="pb-8 border-b border-black/5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Type</h3>
                 <input placeholder="e.g. Pourover, Immersion, Press" value={type} onChange={e => setType(e.target.value)} className="m3-input h-11" />
               </div>
 
-              <div className="pb-8 border-b border-black/5">
+              <div className="pb-6 border-b border-black/5">
                 <h3 className="text-xl font-bold mb-6">Notes</h3>
                 <textarea 
                   placeholder="e.g. Use 02 size filters, pre-heat well" 

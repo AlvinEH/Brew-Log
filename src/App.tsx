@@ -105,7 +105,7 @@ export default function App() {
   const [editingGrinder, setEditingGrinder] = useState<Grinder | null>(null);
   const [editingBrewer, setEditingBrewer] = useState<Brewer | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Partial<Recipe> | null>(null);
-  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('ratio');
+  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('preferences');
   const [toolsSubTab, setToolsSubTab] = useState<'grinders' | 'brewers'>('grinders');
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollY = React.useRef(0);
@@ -611,7 +611,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] overflow-x-hidden">
+      <main className="max-w-4xl mx-auto px-6 py-5 pt-[calc(1.25rem+env(safe-area-inset-top))] overflow-x-hidden">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeTab}
@@ -761,20 +761,14 @@ export default function App() {
                 </div>
 
                 <div className="m3-card bg-primary-container/10 border-none relative z-20">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-primary-container rounded-xl">
-                      <Settings className="text-on-primary-container" size={20} />
-                    </div>
-                    <h2 className="text-lg font-bold">Settings Menu</h2>
-                  </div>
                   <div className="relative">
                     <CustomSelect
                       value={settingsSubTab}
                       onChange={(val) => setSettingsSubTab(val as SettingsSubTab)}
                       options={[
+                        { value: 'preferences', label: 'Preferences' },
                         { value: 'ratio', label: 'Ratio Calculator' },
                         { value: 'temp', label: 'Temperature Converter' },
-                        { value: 'preferences', label: 'Preferences' },
                         { value: 'account', label: 'Account Info' },
                       ]}
                     />

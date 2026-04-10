@@ -38,10 +38,10 @@ const TemperatureConverter = React.memo(() => {
       className="m3-card"
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 bg-secondary-container rounded-2xl">
-          <Thermometer className="text-on-secondary-container" size={24} />
+        <div className="p-3 bg-primary-container rounded-2xl">
+          <Thermometer className="text-on-primary-container" size={24} />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight">Temp Converter</h2>
+        <h2 className="text-2xl font-semibold">Temp Converter</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
