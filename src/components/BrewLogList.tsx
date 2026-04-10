@@ -67,7 +67,7 @@ const BrewLogList = React.memo(({ logs, onDelete, onEdit, savedRecipes, savedBea
   }
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6">
       {/* Filters Header */}
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
