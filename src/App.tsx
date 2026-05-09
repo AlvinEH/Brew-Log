@@ -53,13 +53,14 @@ import BrewLogForm from './components/BrewLogForm';
 import RecipeTab from './components/RecipeTab';
 import RatioCalculator from './components/RatioCalculator';
 import TemperatureConverter from './components/TemperatureConverter';
+import WaterConverter from './components/WaterConverter';
 import CoffeeBeanTab from './components/CoffeeBeanTab';
 import ToolsTab from './components/ToolsTab';
 import FloatingActionButton from './components/FloatingActionButton';
 import CustomSelect from './components/CustomSelect';
 
 type Tab = 'history' | 'new' | 'recipes' | 'beans' | 'tools' | 'settings' | 'new-bean' | 'new-tool' | 'new-recipe';
-type SettingsSubTab = 'ratio' | 'temp' | 'preferences' | 'account';
+type SettingsSubTab = 'ratio' | 'temp' | 'water' | 'preferences' | 'account';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -769,6 +770,7 @@ export default function App() {
                         { value: 'preferences', label: 'Preferences' },
                         { value: 'ratio', label: 'Ratio Calculator' },
                         { value: 'temp', label: 'Temperature Converter' },
+                        { value: 'water', label: 'Water Converter (ml/oz)' },
                         { value: 'account', label: 'Account Info' },
                       ]}
                     />
@@ -793,6 +795,7 @@ export default function App() {
                   >
                     {settingsSubTab === 'ratio' && <RatioCalculator />}
                     {settingsSubTab === 'temp' && <TemperatureConverter />}
+                    {settingsSubTab === 'water' && <WaterConverter />}
                     {settingsSubTab === 'preferences' && (
                       <div className="m3-card">
                         <div className="flex items-center gap-3 mb-8">
